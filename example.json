@@ -1,0 +1,20 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de ejemplo",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/example": {
+      "get": {
+        "summary": "Ejemplo de endpoint",
+        "operationId": "getExample",
+        "responses": {
+          "200": {
+            "description": "Éxito"
+          }
+        }
+      }
+    }
+  }
+}
