@@ -1,0 +1,719 @@
+openapi: 3.0.3
+info:
+  title: API de Gestión de Contratistas, Vehículos y Personal
+  description: API para la creación y actualización de contratistas, vehículos y personal.
+  version: 1.0.1
+servers:
+  - url: http://api.testia.cl
+tags:
+  - name: Peticiones de creacion y actualizacion de contratistas, vehiculos y staff
+    description: Endpoints relacionados con la creación y actualización de contratistas, vehículos y personal.
+
+paths:
+  /request/create-contractor:
+    post:
+      tags:
+        - Peticiones de creacion y actualizacion de contratistas, vehiculos y staff
+      summary: Crear o actualizar contratista
+      description: Endpoint para crear y/o actualizar un contratista.
+      operationId: createContractor
+      parameters:
+        - name: Apikey
+          in: header
+          description: ApiKey del usuario
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/ContractorDataDTO"
+                - $ref: "#/components/schemas/ContractorMetadataArrayDTO"
+                - type: object
+                  properties:
+                    files:
+                      type: array
+                      description: Los nombres y cantidad de los archivos debe coincidir con la metadata
+                      items:
+                        type: string
+                        format: binary
+            examples:
+              JavaScript:
+                summary: Ejemplo de creación de contratista
+                description: Request para crear un contratista tipo empresa.
+                value:
+                  contractor:
+                    contractorTypeId: 1
+                    rut: "12345678-9"
+                    businessName: "Empresa de Ejemplo S.A."
+                    serviceTypeId: "1"
+                    reviewStartDate: "2024-12-01"
+                    reviewEndDate: "2024-12-31"
+                  contractorPartner:
+                    rut: "98765432-1"
+                    name: "Juan"
+                    lastName: "Pérez"
+                    email: "juan.perez@ejemplo.com"
+                    phoneNumber: "+56912345678"
+                  metadata:
+                    - fileName: "documento1.pdf"
+                      documentType: 16
+                      documentEntity: 1
+                    - fileName: "documento2.pdf"
+                      documentType: 17
+                      documentEntity: 2
+                  files:
+                    - "documento1.pdf"
+                    - "documento2.pdf"
+              javascript-example:
+                summary: Ejemplo en JavaScript
+                description: Uso de `axios` para enviar una solicitud desde JavaScript.
+                value: |
+                  const axios = require('axios');
+                  const FormData = require('form-data');
+                  const fs = require('fs');
+
+                  const formData = new FormData();
+                  formData.append('contractor', JSON.stringify({
+                    contractorTypeId: 1,
+                    rut: '12345678-9',
+                    businessName: 'Empresa de Ejemplo S.A.',
+                    serviceTypeId: '1',
+                    reviewStartDate: '2024-12-01',
+                    reviewEndDate: '2024-12-31'
+                  }));
+                  formData.append('metadata', JSON.stringify([
+                    {
+                      fileName: 'documento1.pdf',
+                      documentType: 16,
+                      documentEntity: 1
+                    },
+                    {
+                      fileName: 'documento2.pdf',
+                      documentType: 17,
+                      documentEntity: 2
+                    }
+                  ]));
+                  formData.append('files', fs.createReadStream('documento1.pdf'));
+                  formData.append('files', fs.createReadStream('documento2.pdf'));
+
+                  axios.post('http://api.testia.cl/request/create-contractor', formData, {
+                    headers: {
+                      'Apikey': 'tu-apikey-aqui',
+                      ...formData.getHeaders()
+                    }
+                  }).then(response => {
+                    console.log(response.data);
+                  }).catch(error => {
+                    console.error(error);
+                  });
+              python-example:
+                summary: Ejemplo en Python
+                description: Uso de la librería `requests` para enviar una solicitud desde Python.
+                value: |
+                  import requests
+
+                  url = "http://api.testia.cl/request/create-contractor"
+                  headers = {
+                      "Apikey": "tu-apikey-aqui"
+                  }
+                  files = {
+                      'contractor': (None, '{"contractorTypeId": 1, "rut": "12345678-9", "businessName": "Empresa de Ejemplo S.A.", "serviceTypeId": "1", "reviewStartDate": "2024-12-01", "reviewEndDate": "2024-12-31"}', 'application/json'),
+                      'metadata': (None, '[{"fileName": "documento1.pdf", "documentType": 16, "documentEntity": 1}, {"fileName": "documento2.pdf", "documentType": 17, "documentEntity": 2}]', 'application/json'),
+                      'files': ('documento1.pdf', open('documento1.pdf', 'rb')),
+                      'files': ('documento2.pdf', open('documento2.pdf', 'rb'))
+                  }
+
+                  response = requests.post(url, headers=headers, files=files)
+
+                  print(response.status_code)
+                  print(response.json())
+
+      responses:
+        "201":
+          description: Solicitud de creación o actualización de contratista recibida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "401":
+          description: No autorizado
+
+  /request/create-vehicle/{contractorRut}:
+    post:
+      tags:
+        - Peticiones de creacion y actualizacion de contratistas, vehiculos y staff
+      summary: Crear o actualizar vehículo
+      description: Endpoint para crear y/o actualizar un vehículo.
+      operationId: createVehicle
+      parameters:
+        - name: contractorRut
+          in: path
+          description: RUT del contratista asociado a la empresa. En formato con guion sin puntos
+          required: true
+          schema:
+            type: string
+        - name: Apikey
+          in: header
+          description: ApiKey del usuario
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/VehicleDataDto"
+                - $ref: "#/components/schemas/VehicleMetadataArrayDTO"
+                - type: object
+                  properties:
+                    files:
+                      type: array
+                      description: Los nombres y cantidad de los archivos debe coincidir con la metadata
+                      items:
+                        type: string
+                        format: binary
+            examples:
+              JavaScript:
+                summary: Ejemplo de creación de vehículo
+                description: Request para crear un vehículo asociado a un contratista.
+                value:
+                  vehicle:
+                    vehicleType: 3
+                    patent: "ABCD-123"
+                  coupled:
+                    coupledType: 1
+                    patent: "EFGH-456"
+                  metadata:
+                    - fileName: "documento1.pdf"
+                      documentType: 24
+                      documentEntity: 3
+                    - fileName: "documento2.pdf"
+                      documentType: 25
+                      documentEntity: 5
+                  files:
+                    - "documento1.pdf"
+                    - "documento2.pdf"
+              javascript-example:
+                summary: Ejemplo en JavaScript
+                description: Uso de `axios` para enviar una solicitud desde JavaScript.
+                value: |
+                  const axios = require('axios');
+                  const FormData = require('form-data');
+                  const fs = require('fs');
+
+                  const formData = new FormData();
+                  formData.append('vehicle', JSON.stringify({
+                    vehicleType: 3,
+                    patent: 'ABCD-123'
+                  }));
+                  formData.append('coupled', JSON.stringify({
+                    coupledType: 1,
+                    patent: 'EFGH-456'
+                  }));
+                  formData.append('metadata', JSON.stringify([
+                    {
+                      fileName: 'documento1.pdf',
+                      documentType: 24,
+                      documentEntity: 3
+                    },
+                    {
+                      fileName: 'documento2.pdf',
+                      documentType: 25,
+                      documentEntity: 5
+                    }
+                  ]));
+                  formData.append('files', fs.createReadStream('documento1.pdf'));
+                  formData.append('files', fs.createReadStream('documento2.pdf'));
+
+                  axios.post('http://api.testia.cl/request/create-vehicle/12345678-9', formData, {
+                    headers: {
+                      'Apikey': 'tu-apikey-aqui',
+                      ...formData.getHeaders()
+                    }
+                  }).then(response => {
+                    console.log(response.data);
+                  }).catch(error => {
+                    console.error(error);
+                  });
+              python-example:
+                summary: Ejemplo en Python
+                description: Uso de la librería `requests` para enviar una solicitud desde Python.
+                value: |
+                  import requests
+
+                  url = "http://api.testia.cl/request/create-vehicle/12345678-9"
+                  headers = {
+                      "Apikey": "tu-apikey-aqui"
+                  }
+                  files = {
+                      'vehicle': (None, '{"vehicleType": 3, "patent": "ABCD-123"}', 'application/json'),
+                      'coupled': (None, '{"coupledType": 1, "patent": "EFGH-456"}', 'application/json'),
+                      'metadata': (None, '[{"fileName": "documento1.pdf", "documentType": 24, "documentEntity": 3}, {"fileName": "documento2.pdf", "documentType": 25, "documentEntity": 5}]', 'application/json'),
+                      'files': ('documento1.pdf', open('documento1.pdf', 'rb')),
+                      'files': ('documento2.pdf', open('documento2.pdf', 'rb'))
+                  }
+
+                  response = requests.post(url, headers=headers, files=files)
+
+                  print(response.status_code)
+                  print(response.json())
+      responses:
+        "201":
+          description: Solicitud de creación o actualizacion de vehículo recibida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "401":
+          description: No autorizado
+
+  /request/create-staff/{contractorRut}:
+    post:
+      tags:
+        - Peticiones de creacion y actualizacion de contratistas, vehiculos y staff
+      summary: Crear o actualizar personal
+      description: Endpoint para crear y/o actualizar personal.
+      operationId: createStaff
+      parameters:
+        - name: contractorRut
+          in: path
+          description: RUT del contratista asociado a la empresa. En formato con guion sin puntos
+          required: true
+          schema:
+            type: string
+        - name: Apikey
+          in: header
+          description: ApiKey del usuario
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/StaffDataDto"
+                - $ref: "#/components/schemas/StaffMetadataArrayDTO"
+                - type: object
+                  properties:
+                    files:
+                      type: array
+                      description: Los nombres y cantidad de los archivos debe coincidir con la metadata
+                      items:
+                        type: string
+                        format: binary
+            examples:
+              JavaScript:
+                summary: Ejemplo de creación de personal
+                description: Request para crear personal asociado a un contratista.
+                value:
+                  staff:
+                    name: "Carlos"
+                    lastName: "Sánchez"
+                    rut: "11222333-4"
+                    staffType: "1"
+                  vehicleStaff:
+                    staffRut: "11222333-4"
+                    vehiclePatents:
+                      - "ABCD-123"
+                      - "EFGH-456"
+                  metadata:
+                    - fileName: "documento1.pdf"
+                      documentType: 30
+                      documentEntity: 4
+                    - fileName: "documento2.pdf"
+                      documentType: 31
+                      documentEntity: 4
+                  files:
+                    - "documento1.pdf"
+                    - "documento2.pdf"
+              javascript-example:
+                summary: Ejemplo en JavaScript
+                description: Uso de `axios` para enviar una solicitud desde JavaScript.
+                value: |
+                  const axios = require('axios');
+                  const FormData = require('form-data');
+                  const fs = require('fs');
+
+                  const formData = new FormData();
+                  formData.append('staff', JSON.stringify({
+                    name: 'Carlos',
+                    lastName: 'Sánchez',
+                    rut: '11222333-4',
+                    staffType: '1'
+                  }));
+                  formData.append('vehicleStaff', JSON.stringify({
+                    staffRut: '11222333-4',
+                    vehiclePatents: ['ABCD-123', 'EFGH-456']
+                  }));
+                  formData.append('metadata', JSON.stringify([
+                    {
+                      fileName: 'documento1.pdf',
+                      documentType: 30,
+                      documentEntity: 4
+                    },
+                    {
+                      fileName: 'documento2.pdf',
+                      documentType: 31,
+                      documentEntity: 4
+                    }
+                  ]));
+                  formData.append('files', fs.createReadStream('documento1.pdf'));
+                  formData.append('files', fs.createReadStream('documento2.pdf'));
+
+                  axios.post('http://api.testia.cl/request/create-staff/12345678-9', formData, {
+                    headers: {
+                      'Apikey': 'tu-apikey-aqui',
+                      ...formData.getHeaders()
+                    }
+                  }).then(response => {
+                    console.log(response.data);
+                  }).catch(error => {
+                    console.error(error);
+                  });
+              python-example:
+                summary: Ejemplo en Python
+                description: Uso de la librería `requests` para enviar una solicitud desde Python.
+                value: |
+                  import requests
+
+                  url = "http://api.testia.cl/request/create-staff/12345678-9"
+                  headers = {
+                      "Apikey": "tu-apikey-aqui"
+                  }
+                  files = {
+                      'staff': (None, '{"name": "Carlos", "lastName": "Sánchez", "rut": "11222333-4", "staffType": "1"}', 'application/json'),
+                      'vehicleStaff': (None, '{"staffRut": "11222333-4", "vehiclePatents": ["ABCD-123", "EFGH-456"]}', 'application/json'),
+                      'metadata': (None, '[{"fileName": "documento1.pdf", "documentType": 30, "documentEntity": 4}, {"fileName": "documento2.pdf", "documentType": 31, "documentEntity": 4}]', 'application/json'),
+                      'files': ('documento1.pdf', open('documento1.pdf', 'rb')),
+                      'files': ('documento2.pdf', open('documento2.pdf', 'rb'))
+                  }
+
+                  response = requests.post(url, headers=headers, files=files)
+
+                  print(response.status_code)
+                  print(response.json())
+      responses:
+        "201":
+          description: Solicitud de creación de personal recibida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "401":
+          description: No autorizado
+
+components:
+  schemas:
+    ContractorDataDTO:
+      type: object
+      properties:
+        contractor:
+          type: object
+          description: Datos del contratista. Para actualizar, enviar unicamente el campo rut (Solo se permite actualizar documentos)
+          properties:
+            contractorTypeId:
+              type: number
+              description: ID del tipo de contratista. Tipo "1" para Empresa o "2" para Persona natural
+            rut:
+              type: string
+              description: RUT del contratista para crear o actualizar en formato con guiones ni puntos
+            businessName:
+              type: string
+              description: Nombre de la contratista
+            serviceTypeId:
+              type: string
+              description: |
+                ID del tipo de servicio del contratista.
+                - Tipo "1" para Monitoreo: Clientes finales
+                - Tipo "2" para Prospecto: Clientes potenciales (Con tiempo y funciones limitadas)
+            reviewStartDate:
+              type: date
+              description: Fecha de inicio de la review en formato YYYY-MM-DD
+            reviewEndDate:
+              type: date
+              description: Fecha de fin de la review en formato YYYY-MM-DD
+          required:
+            - rut
+            - contractorTypeId
+            - businessName
+            - serviceTypeId
+            - reviewStartDate
+            - reviewEndDate
+
+        contractorPartner:
+          type: object
+          description: Datos de la contraparte asociada al contratista
+          properties:
+            rut:
+              type: string
+              description: RUT de la contraparte asociado al contratista. Formato con guiones sin puntos
+            name:
+              type: string
+              description: Nombre de la contraparte asociado al contratista
+            lastName:
+              type: string
+              description: Apellido de la contraparte asociado al contratista
+            email:
+              type: string
+              description: Correo de la contraparte asociado al contratista
+            phoneNumber:
+              type: string
+              description: Telefono de la contraparte asociado al contratista
+          required:
+            - rut
+            - name
+            - lastName
+            - email
+            - phoneNumber
+
+    ContractorMetadataArrayDTO:
+      type: object
+      properties:
+        metadata:
+          description: Metadatos relacionados con los documentos del contratista
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+                description: Nombre del documento a subir
+              side:
+                type: string
+                description: Side puede ser "frontal or "trasera". Solo para carnet de identidad y licencia
+              documentType:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para empresa:
+                    - "16" F30 (Total pagos)
+                    - "17" F30 - 1 (Pagos individuales)
+                    - "18" Carpeta Tributaria
+                  - Para persona natural:
+                    - "30" Cedula de Identidad
+                    - "31" Licencia de conducir
+                    - "32" Certificado de Antecedentes
+                    - "33" Hoja de vida del conductor
+              documentEntity:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para empresa:
+                    - "1" Contratista
+            required:
+              - fileName
+              - documentType
+              - documentEntity
+
+    VehicleDataDto:
+      type: object
+      properties:
+        vehicle:
+          type: object
+          description: Datos del vehiculo a crear.
+            Para actualizar, enviar unicamente el campo patent del vehiculo o acoplado (Solo se permite actualizar documentos)
+          properties:
+            vehicleType:
+              type: number
+              description: |
+                ID del tipo de vehiculo
+                - "1" Batea
+                - "2" Cama baja
+                - "3" Camión abierto
+                - "4" Camión cerrado
+                - "5" Camión pluma
+                - "6" Cisterna
+                - "7" Furgón
+                - "8" Rampla abierta
+                - "9" Rampla cerrada
+                - "10" Refrigerado
+                - "11" Semi baranda
+                - "12" Sider
+                - "13" Tracto
+                - "14" Transportador de vehículos
+                - "15" Utilitario
+                - "16" Otro
+            patent:
+              type: string
+              description: Patente del vehiculo para crear
+          required:
+            - vehicleType
+            - patent
+
+        coupled:
+          type: object
+          description: Datos del acoplado a crear.
+          properties:
+            coupledType:
+              type: number
+              description: |
+                ID del tipo de acoplado
+                - "1" Remolque
+                - "2" Semirremolque
+            patent:
+              type: string
+              description: Patente del acoplado para crear
+            # reviewCompaniesId:
+            #   type: number
+            #   description: Fecha de fin de la review en formato YYYY-MM-DD
+          required:
+            - patent
+            - coupledType
+
+    VehicleMetadataArrayDTO:
+      type: object
+      properties:
+        metadata:
+          description: Metadatos relacionados con los documentos del vehiculo o acoplado
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+                description: Nombre del documento a subir
+              documentType:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para vehiculo y acoplado:
+                    - "24" Permiso de circulacion
+                    - "25" Revisión técnica
+                    - "26" SOAP
+                    - "28" Póliza de seguro
+                    - "29" Pagos del seguro
+              documentEntity:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para empresa:
+                    - "3" Vehículos
+                    - "5" Acoplados
+            required:
+              - fileName
+              - documentType
+              - documentEntity
+
+    StaffDataDto:
+      type: object
+      properties:
+        staff:
+          type: object
+          description: Datos del personal a crear.
+            Para actualizar, enviar unicamente el campo rut del personal (Solo se permite actualizar documentos)
+          properties:
+            name:
+              type: string
+              description: Nombre del personal para crear
+            lastName:
+              type: string
+              description: Apellido del personal para crear
+            rut:
+              type: string
+              description: RUT del personal para crear. En formato con guiones y sin puntos
+            staffType:
+              type: string
+              description: |
+                Tipo de personal para crear
+                  - "1" Chofer
+                  - "2" Peoneta
+                  - "3" Gruero
+                  - "4" Encargado bodega
+          required:
+            - name
+            - lastName
+            - rut
+            - staffType
+
+        vehicleStaff:
+          type: object
+          description: Asociar un personal con un vehiculo o acoplado previamente existente
+          properties:
+            staffRut:
+              type: string
+              description: RUT del contratista
+            vehiclePatents:
+              type: array
+              items:
+                type: string
+              description: Patente del vehiculo para asociar
+          required:
+            - staffRut
+            - vehiclePatents
+
+    StaffMetadataArrayDTO:
+      type: object
+      properties:
+        metadata:
+          description: Metadatos relacionados con los documentos del personal
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+                description: Nombre del documento a subir
+              side:
+                type: string
+                description: Side puede ser "frontal or "trasera". Solo para carnet de identidad y licencia
+              documentType:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - "30" Cedula de Identidad
+                  - "31" Licencia de conducir
+                  - "32" Certificado de Antecedentes 
+                  - "33" Hoja de vida del conductor
+              documentEntity:
+                type: number
+                description: |
+                  Identificador la entidad del documento a cargar.
+                  - "4" Personal
+            required:
+              - fileName
+              - documentType
+              - documentEntity
