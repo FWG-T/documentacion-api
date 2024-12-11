@@ -1,0 +1,972 @@
+openapi: 3.0.3
+info:
+  title: Webhook Gestión de Notificaciones Contratistas, Vehículos y Personal
+  description: Webhook para la entrega y notificación de eventos relacionados con la información de contratistas, personal y vehículos, incluyendo actualizaciones de estado, colores, y otros datos relevantes para el seguimiento y la gestión.
+  version: 1.0.1
+servers:
+  - url: https:Example.com
+tags:
+  - name: EntityEventWebhook 
+    description: Webhook para la entrega y notificación de eventos relacionados con la información de contratistas, personal y vehículos, incluyendo actualizaciones de estado, colores, y otros datos relevantes para el seguimiento y la gestión.
+
+paths:
+   '':
+    post:
+      tags:
+        - Estructura de los Eventos
+      summary: Descripción general de la estructura de los eventos.
+      description: Definición detallada de la estructura estándar de los eventos recibidos, incluyendo los campos principales y su propósito
+      operationId: GestionEventos
+      responses:
+          "201":
+            description: Solicitud de creación o actualización de contratista recibida
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: "#/components/schemas/SuccessCreateStaffEventDTO"
+                    - type: object
+   'Staff':
+    post:
+      tags:
+        - Notificación al crear personal
+      summary: Notificación creación de staff.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un personal.
+      operationId: GestionEventos
+      responses:
+          "201":
+            description: Solicitud de creación de personal
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: "#/components/schemas/SuccessStaffCreate"
+                    - type: object
+
+   'staf update':
+    post:
+      tags:
+        - Notificación al actualizar un personal 
+      summary: Notificación actualizar de staff.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un personal.
+      operationId: GestionEventos
+      responses:
+          "201":
+            description: Solicitud de actualizar de personal
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: "#/components/schemas/SuccessStaffUpdate"
+                    - type: object
+
+
+
+   'create vehicle':
+    post:
+      tags:
+        - Notificación al crear un vehículo 
+      summary: Notificación crear de vehículo.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un vehículo.
+      operationId: GestionEventos
+      responses:
+          "201":
+            description: Solicitud de creación de vheículo
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: "#/components/schemas/SuccessVehicleCreate"
+                    - type: object
+
+
+   'update vehicle':
+    post:
+      tags:
+        - Notificación al actualizar un vehículo 
+      summary: Notificación actualizar de vehículo.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualización de un vehículo.
+      operationId: GestionEventos
+      responses:
+          "201":
+            description: Solicitud de actualizacón de vheículo
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: "#/components/schemas/UpdateVehicle"
+                    - type: object
+
+
+   'create contractor':
+    post:
+      tags:
+        - Notificación al crear  un contratista 
+      summary: Notificación crear un contratista.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un contratista.
+      operationId: GestionEventos
+      responses:
+          "201":
+            description: Solicitud de creación de contratista
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: "#/components/schemas/SuccessContractorCreate"
+                    - type: object
+
+
+   'update contractor':
+    post:
+      tags:
+        - Notificación al actualizar  un contratista 
+      summary: Notificación al actualizar un contratista.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar de un contratista.
+      operationId: GestionEventos
+      responses:
+          "201":
+            description: Solicitud de actualizar de contratista
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: "#/components/schemas/SuccessContractorupdate"
+                    - type: object
+
+
+components:
+  schemas:
+
+    SuccessContractorupdate:
+            type: object
+            properties:
+              action:
+                type: string
+                description: Acción realizada
+                example: contractor.updated
+              status:
+                type: string
+                description: Estado de la operación
+                example: success
+              operationType:
+                type: string
+                description: Tipo de operación
+                example: update
+              entity:
+                type: string
+                description: Entidad sobre la que se realizó la operación
+                example: contractor
+              description:
+                type: string
+                description: Descripción del evento
+                example: se actualizó contratista de forma exitosa
+              timestamp:
+                type: string
+                format: date-time
+                description: Marca temporal del evento en formato ISO 8601
+                example: 2024-12-02T16:44:14.215Z
+              payload:
+                allOf:
+                - $ref: '#/components/schemas/ContractorUpdate'
+     
+    SuccessContractorCreate:
+            type: object
+            properties:
+              action:
+                type: string
+                description: Acción realizada
+                example: contractor.create
+              status:
+                type: string
+                description: Estado de la operación
+                example: success
+              operationType:
+                type: string
+                description: Tipo de operación
+                example: create
+              entity:
+                type: string
+                description: Entidad sobre la que se realizó la operación
+                example: contractor
+              description:
+                type: string
+                description: Descripción del evento
+                example: se creo contratista de forma exitosa
+              timestamp:
+                type: string
+                format: date-time
+                description: Marca temporal del evento en formato ISO 8601
+                example: 2024-12-02T16:44:14.215Z
+              payload:
+                allOf:
+                - $ref: '#/components/schemas/ContractorResponse'
+           
+    UpdateVehicle:
+          type: object
+          properties:
+            message:
+              type: string 
+              description: Mensjae de actualización
+            documents:
+              type: array
+              description: Lista de documentos asociados al vehículo
+              items:
+                type: object
+                properties:
+                  document:
+                    type: string
+                    description: Nombre del documento
+                    example: Permiso de Circulación
+                  documentType:
+                    type: integer
+                    description: ID del tipo de documento
+                    example: 27
+                  status:
+                    type: string
+                    description: Estado del documento
+                    example: Pendiente de subir
+                  color:
+                    type: string
+                    description: Color asociado al estado del documento
+                    example: Rojo
+                  reason:
+                    type: string
+                    nullable: true
+                    description: Razón asociada al estado del documento (si aplica)
+                    example: null
+                  parent:
+                    type: string
+                    nullable: true
+                    description: Referencia al documento principal (si aplica)
+                    example: 547DJK
+
+    SuccessCreateStaffEventDTO:
+      type: object
+      properties:
+        action:
+          type: string
+          description: |
+                Acción realizada
+                - contractor.create
+                - contractor.updated
+                - vehicle.create
+                - vehicle.updated
+                - staff.create
+                - staff.updated
+          example: staff.create
+        status:
+          type: string
+          description: |
+                Estado de la operación
+                - success
+                - error
+                - warning
+
+          example: success
+        operationType:
+          type: string
+          description: |
+                Tipo de operación
+                - create
+                - update
+                - delete
+                - additional-info
+          example: create
+        entity:
+          type: string
+          description: |
+                Entidad sobre la que se realizó la operación
+                - vehicle
+                - contractor
+                - staff
+                - coupled
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: se creo personal de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          type: object
+          properties:
+            personal:
+              type: object
+              description: Información del personal creado
+              properties:
+                name:
+                  type: string
+                  description: Nombre del personal
+                  example: rodwin2
+                lastName:
+                  type: string
+                  description: Apellido del personal
+                  example: primera
+                rut:
+                  type: string
+                  description: RUT del personal
+                  example: 88881440-k
+            documents:
+              type: array
+              description: Lista de documentos asociados al personal
+              items:
+                type: object
+                properties:
+                  side:
+                    type: string
+                    nullable: true
+                    description: Lado del documento (frontal o trasera)
+                    example: frontal
+                  rut:
+                    type: string
+                    description: RUT del personal asociado al documento
+                    example: 88881440-k
+                  document:
+                    type: string
+                    description: Nombre del documento
+                    example: Cédula de identidad
+                  documentType:
+                    type: integer
+                    description: ID del tipo de documento
+                    example: 30
+                  status:
+                    type: string
+                    description: Estado del documento
+                    example: Pendiente de subir
+                  color:
+                    type: string
+                    description: Color asociado al estado del documento
+                    example: Rojo
+                  reason:
+                    type: string
+                    nullable: true
+                    description: Razón asociada al estado del documento (si aplica)
+                    example: null
+                  parent:
+                    type: string
+                    nullable: true
+                    description: Referencia al documento principal (si aplica)
+                    example: null
+    
+    SuccessStaffCreate:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.create
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: create
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: se creo personal de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          allOf:
+          - $ref: '#/components/schemas/createStaffDto'
+
+    createStaffDto:
+          type: object
+          properties:
+            personal:
+              type: object
+              description: Información del personal creado
+              properties:
+                name:
+                  type: string
+                  description: Nombre del personal
+                  example: rodwin2
+                lastName:
+                  type: string
+                  description: Apellido del personal
+                  example: primera
+                rut:
+                  type: string
+                  description: RUT del personal
+                  example: 88881440-k
+            documents:
+              type: array
+              description: Lista de documentos asociados al personal
+              items:
+                type: object
+                properties:
+                  side:
+                    type: string
+                    nullable: true
+                    description: Lado del documento (frontal o trasera)
+                    example: frontal
+                  rut:
+                    type: string
+                    description: RUT del personal asociado al documento
+                    example: 88881440-k
+                  document:
+                    type: string
+                    description: Nombre del documento
+                    example: Cédula de identidad
+                  documentType:
+                    type: integer
+                    description: ID del tipo de documento
+                    example: 30
+                  status:
+                    type: string
+                    description: Estado del documento
+                    example: Pendiente de subir
+                  color:
+                    type: string
+                    description: Color asociado al estado del documento
+                    example: Rojo
+                  reason:
+                    type: string
+                    nullable: true
+                    description: Razón asociada al estado del documento (si aplica)
+                    example: null
+                  parent:
+                    type: string
+                    nullable: true
+                    description: Referencia al documento principal (si aplica)
+                    example: null
+
+    SuccessStaffUpdate:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.updated
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: updated
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: Se actualizo personal de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          allOf:
+          - $ref: '#/components/schemas/createUpdateStaff'
+
+    createUpdateStaff:
+          type: object
+          properties:
+            message:
+              type: string 
+              description: Mensjae de actualización
+            documents:
+              type: array
+              description: Lista de documentos asociados al personal
+              items:
+                type: object
+                properties:
+                  side:
+                    type: string
+                    nullable: true
+                    description: Lado del documento (frontal o trasera)
+                    example: frontal
+                  rut:
+                    type: string
+                    description: RUT del personal asociado al documento
+                    example: 88881440-k
+                  document:
+                    type: string
+                    description: Nombre del documento
+                    example: Cédula de identidad
+                  documentType:
+                    type: integer
+                    description: ID del tipo de documento
+                    example: 30
+                  status:
+                    type: string
+                    description: Estado del documento
+                    example: Pendiente de subir
+                  color:
+                    type: string
+                    description: Color asociado al estado del documento
+                    example: Rojo
+                  reason:
+                    type: string
+                    nullable: true
+                    description: Razón asociada al estado del documento (si aplica)
+                    example: null
+                  parent:
+                    type: string
+                    nullable: true
+                    description: Referencia al documento principal (si aplica)
+                    example: null
+
+    SuccessVehicleCreate:
+            type: object
+            properties:
+              action:
+                type: string
+                description: Acción realizada
+                example: vehicle.create
+              status:
+                type: string
+                description: Estado de la operación
+                example: success
+              operationType:
+                type: string
+                description: Tipo de operación
+                example: create
+              entity:
+                type: string
+                description: Entidad sobre la que se realizó la operación
+                example: vehicle
+              description:
+                type: string
+                description: Descripción del evento
+                example: se creo personal de forma exitosa
+              timestamp:
+                type: string
+                format: date-time
+                description: Marca temporal del evento en formato ISO 8601
+                example: 2024-12-02T16:44:14.215Z
+              payload:
+                allOf:
+                - $ref: '#/components/schemas/VehicleDTO'
+                
+    VehicleDTO:
+      type: object
+      properties:
+        patent:
+          type: string
+          description: Patente del vehículo
+        brand:
+          type: string
+          nullable: true
+          description: Marca del vehículo
+        model:
+          type: string
+          nullable: true
+          description: Modelo del vehículo
+        vehicle_year:
+          type: string
+          nullable: true
+          description: Año del vehículo
+        vehicle_color:
+          type: string
+          nullable: true
+          description: Color del vehículo
+        engine_number:
+          type: string
+          nullable: true
+          description: Número de motor del vehículo
+        chassis_number:
+          type: string
+          nullable: true
+          description: Número de chasis del vehículo
+        vin_number:
+          type: string
+          nullable: true
+          description: Número VIN del vehículo
+        fuel:
+          type: string
+          nullable: true
+          description: Tipo de combustible del vehículo
+        pvb:
+          type: string
+          nullable: true
+          description: Peso bruto vehicular
+        vehicle_type:
+          type: string
+          nullable: true
+          description: Tipo de vehículo
+        owner_name:
+          type: string
+          nullable: true
+          description: Nombre del propietario
+        owner_rut:
+          type: string
+          nullable: true
+          description: RUT del propietario
+        owner_acquisition_date:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha de adquisición del vehículo por el propietario
+        owner_repertoire:
+          type: string
+          nullable: true
+          description: Repertorio del propietario
+        owner_number:
+          type: string
+          nullable: true
+          description: Número del propietario
+        owner_date:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha asociada al propietario
+        domain_limitations:
+          type: string
+          nullable: true
+          description: Limitaciones de dominio del vehículo
+      required:
+        - patent
+
+    ContractorResponse:
+      type: object
+      properties:
+        contractor:
+          $ref: '#/components/schemas/Contractor'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+
+    Contractor:
+      type: object
+      properties:
+        companyContractor:
+          $ref: '#/components/schemas/CompanyContractor'
+
+    CompanyContractor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        startReview:
+          type: string
+          format: date-time
+        endReview:
+          type: string
+          format: date-time
+        contractor:
+          $ref: '#/components/schemas/ContractorDetails'
+        serviceType:
+          $ref: '#/components/schemas/ServiceType'
+        companyPartner:
+          type: string
+          format: uuid
+        reviewCompanies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewCompany'
+        company:
+          type: string
+          format: uuid
+        fullNameUser:
+          type: string
+          nullable: true
+        additionalFields:
+          type: object
+          nullable: true
+        additionalDocuments:
+          type: object
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+
+    ContractorDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rut:
+          type: string
+        businessName:
+          type: string
+        name:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        contractorType:
+          $ref: '#/components/schemas/ContractorType'
+        companyPartner:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyPartner'
+
+    ContractorType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CompanyPartner:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rut:
+          type: string
+        name:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        userId:
+          type: string
+          nullable: true
+        contractor:
+          type: string
+          nullable: true
+
+    ServiceType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name_service_type:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReviewCompany:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rut:
+          type: string
+        businessName:
+          type: string
+        domainId:
+          type: integer
+        phoneNumber:
+          type: string
+        isActive:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        fullNameUser:
+          type: string
+          nullable: true
+
+    Document:
+      type: object
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+        fileKey:
+          type: string
+          nullable: true
+        companyContractorId:
+          type: string
+          format: uuid
+        documentType:
+          type: integer
+        documentEntity:
+          type: integer
+        rut:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+        colors:
+          $ref: '#/components/schemas/Color'
+        s3Path:
+          type: string
+          format: uri
+          nullable: true
+        s3Region:
+          type: string
+          nullable: true
+        patent:
+          type: string
+          nullable: true
+        side:
+          type: string
+          nullable: true
+        demand:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+        expiringNotificationsCount:
+          type: integer
+        expiredNotificationsCount:
+          type: integer
+        id:
+          type: string
+          format: uuid
+        uploadDate:
+          type: string
+          format: date-time
+        documentTypeRequestId:
+          type: array
+          items:
+            type: string
+
+    Status:
+      type: object
+      properties:
+        id:
+          type: integer
+        statusName:
+          type: string
+        priority:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Color:
+      type: object
+      properties:
+        id:
+          type: integer
+        colorName:
+          type: string
+        priority:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ContractorUpdate:
+        type: object
+        properties:
+          contractor:
+            type: object
+            properties:
+              reviewStartDate:
+                type: string
+                format: date-time
+                description: Fecha de inicio de la revisión en formato ISO 8601.
+              reviewEndDate:
+                type: string
+                format: date-time
+                description: Fecha de finalización de la revisión en formato ISO 8601.
+              reviewCompaniesId:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+                  description: ID de las empresas en formato UUID.
+                description: Lista de identificadores de empresas asociadas al contratista.
+            required:
+              - reviewStartDate
+              - reviewEndDate
+              - reviewCompaniesId
+            description: Información del contratista.
+          documents:
+            type: array
+            items:
+              type: object
+              properties:
+                payloadResult:
+                  type: object
+                  properties:
+                    reason:
+                      type:
+                        - string
+                        - null
+                      description: Razón asociada al documento, puede ser nula.
+                    side:
+                      type:
+                        - string
+                        - null
+                      enum:
+                        - frontal
+                        - trasera
+                        - null
+                      description: Lado del documento, puede ser 'frontal', 'trasera' o nulo.
+                    rut:
+                      type: string
+                      pattern: '^[0-9]+-[0-9kK]$'
+                      description: RUT del documento en formato chileno.
+                    parent:
+                      type:
+                        - string
+                        - null
+                      description: Relación padre del documento, puede ser nula.
+                    document:
+                      type: string
+                      description: Nombre del documento.
+                    documentType:
+                      type: integer
+                      description: Tipo de documento representado como un número entero.
+                    status:
+                      type: string
+                      description: Estado del documento.
+                    color:
+                      type: string
+                      description: Color asociado al documento.
+                  required:
+                    - rut
+                    - document
+                    - documentType
+                    - status
+                    - color
+                  description: Resultado del análisis del documento.
+
+
+
+
