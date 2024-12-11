@@ -1,0 +1,52 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Webhook Gestión de Notificaciones Contratistas, Vehículos y Personal",
+    "version": "1.0.1",
+    "description": "Webhook para la entrega y notificación de eventos relacionados con la información de contratistas, personal y vehículos, incluyendo actualizaciones de estado, colores, y otros datos relevantes para el seguimiento y la gestión."
+  },
+  "paths": {
+    "/entity-event-webhook": {
+      "post": {
+        "summary": "EntityEventWebhook",
+        "description": "Webhook para la entrega y notificación de eventos relacionados con la información de contratistas, personal y vehículos, incluyendo actualizaciones de estado, colores, y otros datos relevantes para el seguimiento y la gestión.",
+        "responses": {
+          "201": {
+            "description": "Solicitud de creación o actualización de contratista recibida",
+            "content": {
+              "application/json": {
+                "example": {
+                  "action": "staff.create",
+                  "status": "success",
+                  "operationType": "create",
+                  "entity": "staff",
+                  "description": "se creo personal de forma exitosa",
+                  "timestamp": "2024-12-02T16:44:14.215Z",
+                  "payload": {
+                    "personal": {
+                      "name": "rodwin2",
+                      "lastName": "primera",
+                      "rut": "88881440-k"
+                    },
+                    "documents": [
+                      {
+                        "side": "frontal",
+                        "rut": "88881440-k",
+                        "document": "Cédula de identidad",
+                        "documentType": 30,
+                        "status": "Pendiente de subir",
+                        "color": "Rojo",
+                        "reason": null,
+                        "parent": null
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
