@@ -1,0 +1,187 @@
+{
+	"openapi": "3.0.0",
+	"paths": {
+		"/consultation/contractor/{rutContractor}": {
+			"get": {
+				"operationId": "getContractor",
+				"summary": "Obtener datos por contratista",
+				"description": "Obtiene información detallada de un contratista utilizando su RUT",
+				"parameters": [{ "name": "rutContractor", "required": true, "in": "path", "description": "RUT del contratista", "example": "87654321-0", "schema": {} }],
+				"responses": {
+					"201": {
+						"description": "Datos obtenidos exitosamente",
+						"content": {
+							"application/json": {
+								"schema": {
+									"example": {
+										"data": {
+											"rut": "string",
+											"situacionTributaria": "string",
+											"contribuyenteDificilFiscalizacion": "string",
+											"BoletinConcursal": "string",
+											"Moras": "string",
+											"Multas": "string",
+											"Juicios": "string",
+											"activo": "string",
+											"start_review": "string",
+											"end_review": "string",
+											"counterpartyRut": "string",
+											"counterpartyName": "string",
+											"counterpartyLastName": "string",
+											"counterpartyPhoneNumber": "string",
+											"counterpartyEmail": "string",
+											"name": "string",
+											"state": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"contractorState": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"vehicleState": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"staffState": { "id": "string", "name": "string", "colorId": "string", "color": "string" },
+											"serviceType": { "id": "number", "nameServiceType": "string" },
+											"contractorType": { "id": "number", "name": "string" },
+											"financialInformation": "string",
+											"InformacionSocietaria": "string",
+											"f30": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"carpetaTributaria": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"f30_1": "string"
+										},
+										"Contratista": "string"
+									}
+								}
+							}
+						}
+					},
+					"400": { "description": "Solicitud incorrecta" },
+					"401": { "description": "No autorizado" },
+					"500": { "description": "Error interno del servidor" }
+				},
+				"tags": ["Consultas por contratistas, vehiculos y personal y sus documentos"]
+			}
+		},
+		"/consultation/vehicle/{rutContractor}/{patent}": {
+			"get": {
+				"operationId": "getVehicle",
+				"summary": "Obtener datos por vehiculo",
+				"description": "Obtiene información detallada de un vehiculo utilizando su patente asociado a un contratista",
+				"parameters": [
+					{ "name": "rutContractor", "required": true, "in": "path", "description": "RUT del contratista", "example": "87654321-0", "schema": {} },
+					{ "name": "patent", "required": true, "in": "path", "description": "Patente del vehiculo", "example": "ABC123", "schema": {} }
+				],
+				"responses": { "201": { "description": "Datos obtenidos exitosamente", "content": { "application/json": { "schema": { "example": { "data": { "type": "string", "model": "string", "patent": "string", "is_charged_theft": "Boolean", "hasFines": "string", "vehicleType": { "id": "number", "name": "string" }, "state": { "id": "number", "name": "string", "colorId": "number", "color": "string" }, "staff": [] }, "Vehiculo": "string" } } } } }, "400": { "description": "Solicitud incorrecta" }, "401": { "description": "No autorizado" }, "500": { "description": "Error interno del servidor" } },
+				"tags": ["Consultas por contratistas, vehiculos y personal y sus documentos"]
+			}
+		},
+		"/consultation/staff/{rutContractor}/{rutPersonal}": {
+			"get": {
+				"operationId": "getPersonal",
+				"summary": "Obtener datos por personal",
+				"description": "Obtiene información detallada de un miembro del personal asociado a un contratista.",
+				"parameters": [
+					{ "name": "rutContractor", "required": true, "in": "path", "description": "RUT del contratista", "example": "87654321-0", "schema": {} },
+					{ "name": "rutPersonal", "required": true, "in": "path", "description": "RUT del personal", "example": "12345678-9", "schema": {} }
+				],
+				"responses": {
+					"201": {
+						"description": "Datos obtenidos exitosamente",
+						"content": {
+							"application/json": {
+								"schema": {
+									"example": {
+										"data": {
+											"contractorRut": "string",
+											"contractorName": "string",
+											"fullname": "string",
+											"rut": "string",
+											"sexo": "string",
+											"bankruptcyBulletin": "Boolean",
+											"antecedentSheet": { "status": "Boolean", "message": "string" },
+											"civilCriminalTrials": { "status": "Boolean", "message": "string" },
+											"nationality": "string",
+											"records_sheet": [],
+											"trials_sheet": [],
+											"staffType": { "id": "number", "name": "string" },
+											"vehicles": [],
+											"state": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"JuiciosPenalesCiviles": "string",
+											"dniState": "string",
+											"licenseStatus": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"driverResumeStatus": { "id": "number", "name": "string", "colorId": "number", "color": "string" },
+											"backgroundStatus": "string"
+										},
+										"Staff": "string"
+									}
+								}
+							}
+						}
+					},
+					"400": { "description": "Solicitud incorrecta" },
+					"401": { "description": "No autorizado" },
+					"500": { "description": "Error interno del servidor" }
+				},
+				"tags": ["Consultas por contratistas, vehiculos y personal y sus documentos"]
+			}
+		},
+		"/consultation/doc/contractor/{rutContractor}": {
+			"get": {
+				"operationId": "getDocContractor",
+				"summary": "Obtener documentos por contratista",
+				"description": "Obtiene los documentos asociados a un contratista utilizando su RUT.",
+				"parameters": [{ "name": "rutContractor", "required": true, "in": "path", "description": "RUT del contratista cuyos documentos se desean consultar.", "example": "87654321-0", "schema": {} }],
+				"responses": { "201": { "description": "Datos obtenidos exitosamente", "content": { "application/json": { "schema": { "example": { "data": { "Array": [{ "id": "string", "fileKey": "string", "documentTypeId": "number", "documentTypeName": "string", "reason": "string", "documentEntityId": "number", "documentEntityName": "string", "contentType": "string", "side": "string", "statusId": "number", "statusName": "string", "colorsId": "number", "colorsName": "string" }] }, "Contratista": "string", "documento": "string" } } } } }, "400": { "description": "Solicitud incorrecta" }, "401": { "description": "No autorizado" }, "500": { "description": "Error interno del servidor" } },
+				"tags": ["Consultas por contratistas, vehiculos y personal y sus documentos"]
+			}
+		},
+		"/consultation/doc/vehicle/{rutContractor}/{patent}": {
+			"get": {
+				"operationId": "getDocVehicle",
+				"summary": "Obtener documentos por vehículo",
+				"description": "Obtiene los documentos de un vehículo utilizando la patente y el RUT del contratista asociado.",
+				"parameters": [
+					{ "name": "rutContractor", "required": true, "in": "path", "description": "RUT del contratista asociado al vehículo.", "example": "87654321-0", "schema": {} },
+					{ "name": "patent", "required": true, "in": "path", "description": "Patente del vehículo cuyos documentos se desean consultar.", "example": "ABC123", "schema": {} }
+				],
+				"responses": { "201": { "description": "Datos obtenidos exitosamente", "content": { "application/json": { "schema": { "example": { "data": { "total": "number", "documents": [{ "id": "string", "S3Path": "string", "fileName": "string", "contentType": "string", "fileKey": "string", "patent": "string", "rut": "string", "reason": "string", "documentTypeId": "number", "documentTypeName": "string", "documentEntityId": "number", "documentEntityName": "string", "side": "string", "statusId": "number", "statusName": "string", "colorId": "number", "colorName": "string" }] }, "Vehicle": "string", "documento": "string" } } } } }, "400": { "description": "Solicitud incorrecta" }, "401": { "description": "No autorizado" }, "500": { "description": "Error interno del servidor" } },
+				"tags": ["Consultas por contratistas, vehiculos y personal y sus documentos"]
+			}
+		},
+		"/consultation/doc/staff/{rutContractor}/{rutPersonal}": {
+			"get": {
+				"operationId": "getDocPersonal",
+				"summary": "Obtener documento por personal",
+				"description": "Obtiene los documentos de un  personal utilizando su RUT y el RUT del contratista asociado.",
+				"parameters": [
+					{ "name": "rutContractor", "required": true, "in": "path", "description": "RUT del contratista asociado al personal.", "example": "87654321-0", "schema": {} },
+					{ "name": "rutPersonal", "required": true, "in": "path", "description": "RUT del personal cuyos documentos se desean consultar.", "example": "12345678-9", "schema": {} }
+				],
+				"responses": {
+					"201": { "description": "Datos obtenidos exitosamente", "content": { "application/json": { "schema": { "example": { "data": { "total": "number", "totalPages": "number", "documents": [{ "id": "string", "S3Path": "string", "fileName": "string", "contentType": "string", "fileKey": "string", "patent": "string", "rut": "string", "reason": "string", "documentTypeId": "number", "documentTypeName": "string", "documentEntityId": "number", "documentEntityName": "string", "side": "string", "statusId": "number", "statusName": "string", "colorId": "number", "colorName": "string" }] }, "Personal": "string", "documento": "string" } } } } },
+					"400": { "description": "Solicitud incorrecta" },
+					"401": { "description": "No autorizado" },
+					"500": { "description": "Error interno del servidor" }
+				},
+				"tags": ["Consultas por contratistas, vehiculos y personal y sus documentos"]
+			}
+		}
+	},
+	"info": { "title": "MS-TESTIA-INFORMATION", "description": "Microservicio encargado de las consultas sobre contratistas, vehiculos y personal y sus documentos", "version": "1.0", "contact": {} },
+	"tags": [],
+	"servers": [
+		{
+			"url": "http://a0808809a99dd455b90a6b3f459dfb0b-799095805.us-east-1.elb.amazonaws.com/msinformation"
+		}
+	],
+	"components": {
+		"securitySchemes": {
+			"ApiKeyAuth": {
+				"type": "apiKey",
+				"name": "apikey",
+				"in": "header",
+				"description": "Clave APIKEY es requerida en los headers para autenticar las solicitudes"
+			}
+		},
+		"schemas": {}
+	},
+	"security": [
+		{
+			"ApiKeyAuth": []
+		}
+	]
+}
