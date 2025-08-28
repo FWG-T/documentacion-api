@@ -1,0 +1,1654 @@
+openapi: 3.0.0
+info:
+  title: Microservicio Information
+  # description: Microservicio encargado de las consultas sobre contratistas, vehiculos y personal y sus documentos.
+  description: |
+    Descargar colección de Postman: <a class="sc-gmgFlS gDfmoL" target="_blank" href="https://testia-public-objects.s3.us-east-1.amazonaws.com/postman/API+Testia+-+Consultar+Entidad.postman_collection.json.zip">Download</a><br><br>
+    Microservicio encargado de las consultas sobre contratistas, vehiculos y personal y sus documentos.
+  version: "1.0.1"
+tags: []
+servers:
+  - url: https://{urlbase}
+paths:
+  /consultation/contractor/{rutContractor}:
+    get:
+      operationId: getContractor
+      summary: Obtener datos por contratista
+      description: Obtiene información detallada de un contratista utilizando su RUT
+      parameters:
+        - name: rutContractor
+          in: path
+          required: true
+          description: RUT del contratista
+          example: "87654321-0"
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorResponse"
+        "400":
+          description: Solicitud incorrecta
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas por contratistas, vehiculos y personal y sus documentos
+
+  /consultation/contractor/{rutContractor}/vehicle/{plate}:
+    get:
+      operationId: getVehicle
+      summary: Obtener datos por vehiculo
+      description: Obtiene información detallada de un vehiculo utilizando su patente asociado a un contratista
+      parameters:
+        - name: rutContractor
+          in: path
+          required: true
+          description: RUT del contratista
+          example: "87654321-0"
+          schema:
+            type: string
+        - name: plate
+          in: path
+          required: true
+          description: Patente del vehiculo
+          example: "ABC123"
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleResponse"
+        "400":
+          description: Solicitud incorrecta
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas por contratistas, vehiculos y personal y sus documentos
+
+  /consultation/contractor/{rutContractor}/staff/{rutPersonal}:
+    get:
+      operationId: getPersonal
+      summary: Obtener datos por personal
+      description: Obtiene información detallada de un miembro del personal asociado a un contratista.
+      parameters:
+        - name: rutContractor
+          in: path
+          required: true
+          description: RUT del contratista
+          example: "87654321-0"
+          schema:
+            type: string
+        - name: rutPersonal
+          in: path
+          required: true
+          description: RUT del personal
+          example: "12345678-9"
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffResponse"
+        "400":
+          description: Solicitud incorrecta
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas por contratistas, vehiculos y personal y sus documentos
+
+  /consultation/doc/contractor/{rutContractor}:
+    get:
+      operationId: getDocContractor
+      summary: Obtener documentos por contratista
+      description: Obtiene los documentos asociados a un contratista utilizando su RUT.
+      parameters:
+        - name: rutContractor
+          in: path
+          required: true
+          description: RUT del contratista cuyos documentos se desean consultar.
+          example: "87654321-0"
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorDocResponse"
+        "400":
+          description: Solicitud incorrecta
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas por contratistas, vehiculos y personal y sus documentos
+
+  /consultation/doc/contractor/{rutContractor}/vehicle/{plate}:
+    get:
+      operationId: getDocVehicle
+      summary: Obtener documentos por vehículo
+      description: Obtiene los documentos de un vehículo utilizando la patente y el RUT del contratista asociado.
+      parameters:
+        - name: rutContractor
+          in: path
+          required: true
+          description: RUT del contratista asociado al vehículo.
+          example: "87654321-0"
+          schema:
+            type: string
+        - name: plate
+          in: path
+          required: true
+          description: Patente del vehículo cuyos documentos se desean consultar.
+          example: "ABC123"
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleDocResponse"
+        "400":
+          description: Solicitud incorrecta
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas por contratistas, vehiculos y personal y sus documentos
+
+  /consultation/doc/contractor/{rutContractor}/staff/{rutPersonal}:
+    get:
+      operationId: getDocPersonal
+      summary: Obtener documento por personal
+      description: Obtiene los documentos de un personal utilizando su RUT y el RUT del contratista asociado.
+      parameters:
+        - name: rutContractor
+          in: path
+          required: true
+          description: RUT del contratista asociado al personal.
+          example: "87654321-0"
+          schema:
+            type: string
+        - name: rutPersonal
+          in: path
+          required: true
+          description: RUT del personal cuyos documentos se desean consultar.
+          example: "12345678-9"
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffDocResponse"
+        "400":
+          description: Solicitud incorrecta
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas por contratistas, vehiculos y personal y sus documentos
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: Apikey
+      in: header
+      description: Clave APIKEY es requerida en los headers para autenticar las solicitudes
+  schemas:
+    State:
+      description: Estado actual de la entidad o documento
+      type: object
+      properties:
+        id:
+          type: number
+          description: |
+            ID del estado:
+            - 1: Válido
+            - 2: Pendiente de subir
+            - 3: Solicitud completada
+            - 4: Solicitud Pendiente
+            - 5: Documento cargado
+            - 6: Sin información
+            - 7: No vigente
+            - 8: Por vencer
+            - 9: Inválido
+            - 10: Solicitud fuera de plazo
+            - 11: Pendiente de validar
+            - 12: Error de lectura
+            - 13: Rechazado
+            - 14: Actividad económica no existe
+            - 15: Patente no existe
+            - 16: Sin actividades económicas
+            - 17: Presenta juicios
+            - 18: Presenta juicios penales
+          example: 2
+        name:
+          type: string
+          description: Nombre del estado
+          example: Pendiente de subir
+        # colorId:
+        #   type: number
+        #   description: |
+        #     ID del color asociado al estado:
+        #     - 1: Verde
+        #     - 2: Amarillo
+        #     - 3: Rojo
+        #     - 4: Gris
+        # example: 2
+        # color:
+        #   type: string
+        #   description: |
+        #     Color asociado al estado:
+        #     - Verde: Valido o aprobado
+        #     - Amarillo:
+        #       - Opcional: Por vencer, solicitud fuera de plazo, no vigente, pendiente de subir, invalido o rechazado.
+        #       - Obligatorio: Por vencer.
+        #     - Rojo:
+        #       - Obligatorio: Rechazado, no vigente, invalido, pendiente de subir, error de lectura.
+        #       - Opcional: Error de lectura.
+        #     - Gris:
+        #       - Obligatorio: Sin información y pendiente de validar.
+        #       - Opcional: Sin información y pendiente de validar.
+        #   example: Amarillo
+
+    StaffUpdatedCivilCriminalTrialsResponse:
+      description: Respuesta de la operación de actualización de información de juicios civiles y penales
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.updated.civil.criminal.trials
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: info-juicios-civiles-penales
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-13T02:18:36.921Z
+        payload:
+          type: object
+          properties:
+            staff:
+              type: object
+              properties:
+                caseDetails:
+                  type: object
+                  properties:
+                    supremeCourt:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CourtCase"
+                    appealsCourt:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CourtCase"
+                    civil:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CourtCase"
+                    labor:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CourtCase"
+                    criminal:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CourtCase"
+                    collection:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CourtCase"
+
+    CourtCase:
+      type: object
+      properties:
+        rol:
+          type: string
+          description: Identificador único del caso
+          example: 123-2024
+        rit:
+          type: string
+          description: Código del registro de ingreso del caso
+          example: CIV-001
+        ruc:
+          type: string
+          description: Registro único de causa
+          example: RUC12345678
+        labeled:
+          type: string
+          description: Etiqueta del caso
+          example: Lawsuit vs ABC Corp
+        admissionDate:
+          type: string
+          format: date
+          description: Fecha de ingreso del caso
+          example: 2024-01-15
+        courtOrTribunal:
+          type: string
+          description: Tribunal o corte que lleva el caso
+          example: Supreme Court
+        status:
+          type: string
+          description: Estado actual del caso
+          example: Pending
+        subject:
+          type: string
+          description: Materia del caso
+          example: Contract Dispute
+        resourceType:
+          type: string
+          description: Tipo de recurso
+          example: Civil
+        rut:
+          type: string
+          description: RUT asociado al caso
+          example: 12.345.678-9
+        dv:
+          type: string
+          description: Dígito verificador del RUT
+          example: K
+        role:
+          type: string
+          description: Rol de la persona o entidad en el caso
+          example: Plaintiff
+        caseType:
+          type: string
+          description: Tipo de caso
+          example: Appeal
+        titled:
+          type: string
+          description: Título del caso
+          example: ABC Corp vs XYZ Ltd
+        caseStatus:
+          type: string
+          description: Estado detallado del caso
+          example: Under Review
+        court:
+          type: string
+          description: Corte específica asociada al caso
+          example: Supreme Court of Chile
+        crime:
+          type: array
+          description: Lista de crímenes asociados al caso
+          items:
+            type: string
+            example: Breach of Contract
+        locationDate:
+          type: string
+          format: date
+          description: Fecha de localización (si aplica)
+          example: 2024-03-01
+        location:
+          type: string
+          description: Ubicación específica (si aplica)
+          example: Santiago
+
+    ContractorResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ContractorData"
+        Contratista:
+          description: RUT del contratista asociado
+          example: 79509024-k
+          type: string
+
+    ContractorData:
+      description: Datos del contratista
+      type: object
+      properties:
+        rut:
+          type: string
+          description: RUT del contratista
+          example: 79509024-k
+        situacionTributaria:
+          type: string
+          description: Situación tributaria del contratista
+          example: VENTA AL POR MAYOR DE FRUTAS Y VERDURAS
+        contribuyenteDificilFiscalizacion:
+          type: string
+          description: Estado de fiscalización del contribuyente
+          example: no
+        BoletinConcursal:
+          type: string
+          description: Estado del boletín concursal
+          example: No
+        Moras:
+          type: string
+          description: Estado de validación de moras
+          example: No
+        Multas:
+          type: string
+          description: Estado de validación de multas
+          example: No
+        Juicios:
+          type: string
+          description: Estado de validación de juicios
+          example: Sí
+        startActivities:
+          type: string
+          description: Indica si el contratista inició actividades
+          example: Si
+        activo:
+          type: boolean
+          description: Indica si el contratista está activo
+          example: true
+        start_review:
+          type: string
+          format: date-time
+          description: Fecha de inicio de revisión
+          example: 2024-09-13T00:00:00.000Z
+        end_review:
+          type: string
+          format: date-time
+          description: Fecha de término de revisión
+          example: 2024-11-24T00:00:00.000Z
+        counterpartyRut:
+          type: string
+          description: RUT de la contraparte
+          example: 16598041-7
+        counterpartyName:
+          type: string
+          description: Nombre de la contraparte
+          example: Selina
+        counterpartyLastName:
+          type: string
+          description: Apellido de la contraparte
+          example: Kyle
+        counterpartyPhoneNumber:
+          type: string
+          description: Número de teléfono de la contraparte
+          example: +56943211234
+        counterpartyEmail:
+          type: string
+          description: Email de la contraparte
+          example: selina@kyle.com
+        name:
+          type: string
+          description: Nombre del contratista
+          example: daily planet
+        state:
+          $ref: "#/components/schemas/State"
+        contractorState:
+          $ref: "#/components/schemas/State"
+        vehicleState:
+          $ref: "#/components/schemas/State"
+        staffState:
+          $ref: "#/components/schemas/State"
+        serviceType:
+          description: Tipo de servicio
+          type: object
+          properties:
+            id:
+              type: number
+              example: 2
+            nameServiceType:
+              type: string
+              description: |
+                Nombre del tipo de servicio:
+                - Prospecto
+                - Monitoreo
+              example: Prospecto
+        contractorType:
+          description: Tipo de contratista
+          type: object
+          properties:
+            id:
+              type: number
+              example: 1
+            name:
+              type: string
+              description: |
+                Nombre del tipo de contratista:
+                - Empresa
+                - Persona natural
+              example: Empresa
+        financialInformation:
+          type: object
+          description: Información financiera del contratista
+          properties:
+            debtAmount:
+              type: string
+              example: "0"
+            scoreExperian:
+              type: string
+              example: "586"
+        InformacionSocietaria:
+          type: object
+          description: Información societaria del contratista
+          properties:
+            businessName:
+              type: string
+              example: GARCIA GARCIA PATRICIA ADRIANA
+            rut:
+              type: string
+              example: "7939579"
+            dv:
+              type: string
+              example: K
+            rutConsulted:
+              type: string
+              example: "76192268"
+            dvConsulted:
+              type: string
+              example: "8"
+            participationExtract:
+              type: string
+              example: 10504020-2F
+            partnerPercentageParticipation:
+              type: string
+              example: "0"
+            participationAmount:
+              type: string
+              example: "0"
+            typeInformation:
+              type: string
+              example: PARTNER
+            money_type:
+              type: string
+              example: "$"
+            participationExtractDate:
+              type: string
+              format: date-time
+              example: 2012-06-07T00:00:00.000Z
+        f30:
+          $ref: "#/components/schemas/State"
+        carpetaTributaria:
+          $ref: "#/components/schemas/State"
+        f30_1:
+          $ref: "#/components/schemas/State"
+        JuiciosPenalesCiviles:
+          type: object
+          description: Juicios penales civiles del personal, agrupados por tipo de juicio.
+          properties:
+            labor:
+              type: object
+              description: Información de juicios laborales.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos laborales asociados al personal.
+                  items:
+                    type: object
+                    description: Caso laboral.
+                    properties: {}
+                  example: []
+              example:
+                cases: []
+            criminal:
+              type: object
+              description: Información de juicios criminales.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos criminales asociados al personal.
+                  items:
+                    type: object
+                    description: Caso criminal.
+                    properties:
+                      rit:
+                        type: string
+                        description: Rol interno del tribunal (RIT) del caso.
+                      ruc:
+                        type: string
+                        description: Rol único de causa (RUC) del caso.
+                      labeled:
+                        type: string
+                        description: Descripción del delito o causa.
+                      subject:
+                        type: string
+                        description: Rol del personal en el caso (ej Denunciado, Testigo, Víctima).
+                      caseStatus:
+                        type: string
+                        description: Estado del caso (ej Concluida, Fallada, Tramitación).
+                      admissionDate:
+                        type: string
+                        description: Fecha de ingreso del caso.
+                      courtOrTribunal:
+                        type: string
+                        description: Tribunal o juzgado donde se llevó el caso.
+              example:
+                cases:
+                  - rit: "Ordinaria-2972-2024"
+                    ruc: ""
+                    labeled: "Hurto simple por un valor de media a menos de 4 utm."
+                    subject: "Denunciado"
+                    caseStatus: "Concluida."
+                    admissionDate: "15/07/2024"
+                    courtOrTribunal: "15º Juzgado de Garantía de Santiago"
+                  - rit: "Ordinaria-520-2023"
+                    ruc: ""
+                    labeled: "Hurto simple por un valor de media a menos de 4 utm."
+                    subject: "Denunciado"
+                    caseStatus: "Concluida."
+                    admissionDate: "16/02/2023"
+                    courtOrTribunal: "Juzgado de Garantía de Quilpué"
+            collection:
+              type: object
+              description: Información de juicios de cobranza.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos de cobranza asociados al personal.
+                  items:
+                    type: object
+                    description: Caso de cobranza.
+                    properties:
+                      rit:
+                        type: string
+                        description: Rol interno del tribunal (RIT) del caso.
+                      court:
+                        type: string
+                        description: Tribunal o juzgado donde se llevó el caso.
+                      amount:
+                        type: string
+                        nullable: true
+                        description: Monto involucrado en el caso (si aplica).
+                      subject:
+                        type: string
+                        description: Rol del personal en el caso.
+                      caseStatus:
+                        type: string
+                        description: Estado del caso.
+                      admissionDate:
+                        type: string
+                        description: Fecha de ingreso del caso.
+              example:
+                cases:
+                  - rit: "D-242-2018"
+                    court: "Jdo. de Letras del Trabajo de Talca"
+                    amount: null
+                    subject: "DDO."
+                    caseStatus: "Concluido"
+                    admissionDate: "2018-02-02T00:00:00.000Z"
+                  - rit: "D-966-2017"
+                    court: "Jdo. de Letras del Trabajo de Talca"
+                    amount: null
+                    subject: "DDO."
+                    caseStatus: "Concluido"
+                    admissionDate: "2017-08-21T00:00:00.000Z"
+            civil:
+              type: object
+              description: Información de juicios civiles.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos civiles asociados al personal.
+                  items:
+                    type: object
+                    description: Caso civil.
+                    properties:
+                      rol:
+                        type: string
+                        description: Rol del caso civil.
+                      court:
+                        type: string
+                        description: Tribunal o juzgado donde se llevó el caso.
+                      subject:
+                        type: string
+                        description: Rol del personal en el caso.
+                      caseStatus:
+                        type: string
+                        description: Estado del caso.
+                      admissionDate:
+                        type: string
+                        description: Fecha de ingreso del caso.
+              example:
+                cases:
+                  - rol: "C-1709-2020"
+                    court: "3º Juzgado de Letras de Talca"
+                    subject: "DDO."
+                    caseStatus: "Tramitación "
+                    admissionDate: "2020-06-26T00:00:00.000Z"
+                  - rol: "C-1091-2014"
+                    court: "2º Juzgado Civil de Concepción"
+                    subject: "DDO."
+                    caseStatus: "Arch. Judic."
+                    admissionDate: "2014-02-04T00:00:00.000Z"
+
+    VehicleResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/VehicleData"
+        Vehiculo:
+          type: string
+          description: Patente del vehículo
+
+    VehicleData:
+      type: object
+      description: Datos del vehículo
+      properties:
+        type:
+          type: string
+          description: |
+            Tipo de vehículo:
+            - Vehiculo
+            - Acoplado
+          example: Vehiculo
+        contractorRut:
+          type: string
+          description: RUT del contratista asociado al vehículo
+          example: 79509024-k
+        brand:
+          type: string
+          description: Marca del vehículo
+          example: Peugeot
+        year:
+          type: string
+          description: Año del vehículo
+          example: "2021"
+        vehicleColor:
+          type: string
+          description: Color del vehículo
+          example: GRIS ARTENSE
+        engineNumber:
+          type: string
+          description: Número de motor del vehículo
+          example: 10FJCX2729924
+        chassis_number:
+          type: string
+          description: Número de chasis del vehículo
+          example: VF3M45GYW NS000435
+        ownerName:
+          type: string
+          description: Nombre del propietario del vehículo
+          example: SOFÍA CATALINA MONDRAGÓN FISCHER
+        owner_rut:
+          type: string
+          description: RUT del propietario del vehículo
+          example: 17.698.713-8
+        contractorName:
+          type: string
+          description: Nombre del contratista asociado al vehículo
+          example: CONTRATISTA INDEPENDIENTE
+        model:
+          type: string
+          description: Modelo del vehículo
+          example: 3008 THP 165HP 1.6 AUT
+        patent:
+          type: string
+          description: Patente del vehículo
+          example: PSLJ69
+        is_charged_theft:
+          type: boolean
+          description: Indica si el vehículo ha sido robado
+          example: false
+        hasFines:
+          type: string
+          description: Estado de validación de multas asociadas al vehículo
+          example: No
+        vehicleType:
+          type: object
+          description: Tipo de vehículo
+          properties:
+            id:
+              type: number
+              example: 16
+            name:
+              type: string
+              description: |
+                Tipos:
+                - Batea
+                - Cama baja
+                - Camión abierto
+                - Camión cerrado
+                - Camión pluma
+                - Cisterna
+                - Furgón
+                - Rampla abierta
+                - Rampla cerrada
+                - Refrigerado
+                - Semi baranda
+                - Sider
+                - Tractor
+                - Transportador de vehículos
+                - Utilitario
+                - Otro
+              example: Otro
+        circulationPermissionInfo:
+          type: object
+          description: Información del permiso de circulación
+          properties:
+            folio:
+              type: string
+              nullable: true
+              example: null
+            period:
+              type: number
+              example: 2024
+            expirationDate:
+              type: string
+              format: date-time
+              example: 2025-03-31T00:00:00.000Z
+            lastPaymentDate:
+              type: string
+              format: date-time
+              example: 2024-04-12T00:00:00.000Z
+            isActive:
+              type: boolean
+              example: false
+            municipality:
+              type: string
+              example: PUCHUNCAVÍ
+        technicalReviewInfo:
+          type: object
+          description: Información de la revisión técnica
+          properties:
+            reviewDate:
+              type: string
+              example: 2024-04-12
+            plantCode:
+              type: string
+              example: AB0529
+            plant:
+              type: string
+              example: CRISTIÁN ROMERO MUÑOZ Y CIA. LTDA.
+            certifiedNumber:
+              type: string
+              example: B0529000000050985
+            status:
+              type: string
+              example: Aprobada
+            expirationDate:
+              type: string
+              format: date-time
+              example: 2026-01-31T00:00:00.000Z
+            greenStamp:
+              type: string
+              example: SELLO VERDE
+        soapInfo:
+          type: object
+          description: Información SOAP del seguro obligatorio
+          properties:
+            registrationRVM:
+              type: string
+              example: PSLJ 69-5
+            vehicleType:
+              type: string
+              example: STATION WAGON
+            brand:
+              type: string
+              example: PEUGEOT
+            model:
+              type: string
+              example: 3008
+            year:
+              type: string
+              example: "2021"
+            engineNumber:
+              type: string
+              example: 10FJCX2729924
+            company:
+              type: string
+              example: SEGUROS GENERALES SURAMERICANA S.A.
+            owner:
+              type: string
+              example: SOFIA CATALINA MONDRAGON FISCHER
+            rut:
+              type: string
+              example: 17.698.713-8
+            prima:
+              type: string
+              example: "5550"
+            valid_from:
+              type: string
+              example: 2025-04-01
+            validTo:
+              type: string
+              example: 2026-03-31
+        state:
+          $ref: "#/components/schemas/State"
+        staff:
+          type: array
+          description: Staff asociado al vehículo
+          items:
+            type: string
+        stateSOAP:
+          $ref: "#/components/schemas/State"
+        technicalReview:
+          $ref: "#/components/schemas/State"
+        circulationPermit:
+          $ref: "#/components/schemas/State"
+        stateSeguro:
+          type: string
+          description: Estado del seguro
+        insurancePaymentStatus:
+          type: string
+          description: Estado del pago del seguro
+
+    StaffResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/StaffData"
+          description: Datos del personal
+        Staff:
+          type: string
+          description: RUT del personal
+
+    StaffData:
+      type: object
+      description: Datos del personal
+      properties:
+        contractorRut:
+          type: string
+          description: RUT del contratista asociado al personal
+          example: 79509024-k
+        contractorName:
+          type: string
+          description: Nombre del contratista asociado al personal
+          example: daily planet
+        fullname:
+          type: string
+          description: Nombre completo del personal
+          example: Selina Kyle
+        rut:
+          type: string
+          description: RUT del personal
+          example: 123456789-0
+        sexo:
+          type: string
+          nullable: true
+          description: Sexo del personal
+          example: null
+        bankruptcyBulletin:
+          type: boolean
+          description: Indica si el personal ha sido declarado en bancarrota
+          example: false
+        antecedentSheet:
+          description: Hoja de antecedentes
+          type: object
+          properties:
+            status:
+              type: boolean
+              description: Estado de la hoja de antecedentes
+              example: false
+            message:
+              type: string
+              description: Mensaje de la hoja de antecedentes
+              example: Pendiente de validar
+        civilCriminalTrials:
+          description: Hoja de juicios penales civiles
+          type: object
+          properties:
+            status:
+              type: boolean
+              description: Estado de la hoja de juicios penales civiles
+              example: true
+            message:
+              type: string
+              description: Mensaje de la hoja de juicios penales civiles
+              example: con juicios
+        nationality:
+          type: string
+          nullable: true
+          description: Nacionalidad del personal
+          example: null
+        records_sheet:
+          type: array
+          description: Hoja de antecedentes (detalle)
+          items:
+            type: object
+          example: [{ "id": "https://bucket.com/aa9008ab-c79a-433b-bf46-5afe1c768a9a.pdf", "file": "32-4-18392709-4.pdf" }]
+        trials_sheet:
+          type: array
+          description: Hoja de juicios (detalle)
+          items:
+            type: object
+          example: []
+        staffType:
+          type: object
+          description: Tipo de personal
+          properties:
+            id:
+              type: number
+              example: 2
+            name:
+              type: string
+              description: |
+                Tipos:
+                - 1: Chofer
+                - 2: Peoneta
+                - 3: Gruero
+                - 4: Encargado bodega
+              example: Peoneta
+        vehicles:
+          type: array
+          description: Vehículos asociados al personal
+          items:
+            type: object
+        state:
+          $ref: "#/components/schemas/State"
+        JuiciosPenalesCiviles:
+          type: object
+          description: Juicios penales civiles del personal, agrupados por tipo de juicio.
+          properties:
+            labor:
+              type: object
+              description: Información de juicios laborales.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos laborales asociados al personal.
+                  items:
+                    type: object
+                    description: Caso laboral.
+                    properties: {}
+                  example: []
+              example:
+                cases: []
+            criminal:
+              type: object
+              description: Información de juicios criminales.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos criminales asociados al personal.
+                  items:
+                    type: object
+                    description: Caso criminal.
+                    properties:
+                      rit:
+                        type: string
+                        description: Rol interno del tribunal (RIT) del caso.
+                      ruc:
+                        type: string
+                        description: Rol único de causa (RUC) del caso.
+                      labeled:
+                        type: string
+                        description: Descripción del delito o causa.
+                      subject:
+                        type: string
+                        description: Rol del personal en el caso (ej Denunciado, Testigo, Víctima).
+                      caseStatus:
+                        type: string
+                        description: Estado del caso (ej Concluida, Fallada, Tramitación).
+                      admissionDate:
+                        type: string
+                        description: Fecha de ingreso del caso.
+                      courtOrTribunal:
+                        type: string
+                        description: Tribunal o juzgado donde se llevó el caso.
+              example:
+                cases:
+                  - rit: "Ordinaria-2972-2024"
+                    ruc: ""
+                    labeled: "Hurto simple por un valor de media a menos de 4 utm."
+                    subject: "Denunciado"
+                    caseStatus: "Concluida."
+                    admissionDate: "15/07/2024"
+                    courtOrTribunal: "15º Juzgado de Garantía de Santiago"
+                  - rit: "Ordinaria-520-2023"
+                    ruc: ""
+                    labeled: "Hurto simple por un valor de media a menos de 4 utm."
+                    subject: "Denunciado"
+                    caseStatus: "Concluida."
+                    admissionDate: "16/02/2023"
+                    courtOrTribunal: "Juzgado de Garantía de Quilpué"
+            collection:
+              type: object
+              description: Información de juicios de cobranza.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos de cobranza asociados al personal.
+                  items:
+                    type: object
+                    description: Caso de cobranza.
+                    properties:
+                      rit:
+                        type: string
+                        description: Rol interno del tribunal (RIT) del caso.
+                      court:
+                        type: string
+                        description: Tribunal o juzgado donde se llevó el caso.
+                      amount:
+                        type: string
+                        nullable: true
+                        description: Monto involucrado en el caso (si aplica).
+                      subject:
+                        type: string
+                        description: Rol del personal en el caso.
+                      caseStatus:
+                        type: string
+                        description: Estado del caso.
+                      admissionDate:
+                        type: string
+                        description: Fecha de ingreso del caso.
+              example:
+                cases:
+                  - rit: "D-242-2018"
+                    court: "Jdo. de Letras del Trabajo de Talca"
+                    amount: null
+                    subject: "DDO."
+                    caseStatus: "Concluido"
+                    admissionDate: "2018-02-02T00:00:00.000Z"
+                  - rit: "D-966-2017"
+                    court: "Jdo. de Letras del Trabajo de Talca"
+                    amount: null
+                    subject: "DDO."
+                    caseStatus: "Concluido"
+                    admissionDate: "2017-08-21T00:00:00.000Z"
+            civil:
+              type: object
+              description: Información de juicios civiles.
+              properties:
+                cases:
+                  type: array
+                  description: Lista de casos civiles asociados al personal.
+                  items:
+                    type: object
+                    description: Caso civil.
+                    properties:
+                      rol:
+                        type: string
+                        description: Rol del caso civil.
+                      court:
+                        type: string
+                        description: Tribunal o juzgado donde se llevó el caso.
+                      subject:
+                        type: string
+                        description: Rol del personal en el caso.
+                      caseStatus:
+                        type: string
+                        description: Estado del caso.
+                      admissionDate:
+                        type: string
+                        description: Fecha de ingreso del caso.
+              example:
+                cases:
+                  - rol: "C-1709-2020"
+                    court: "3º Juzgado de Letras de Talca"
+                    subject: "DDO."
+                    caseStatus: "Tramitación "
+                    admissionDate: "2020-06-26T00:00:00.000Z"
+                  - rol: "C-1091-2014"
+                    court: "2º Juzgado Civil de Concepción"
+                    subject: "DDO."
+                    caseStatus: "Arch. Judic."
+                    admissionDate: "2014-02-04T00:00:00.000Z"
+        dniState:
+          oneOf:
+            - $ref: "#/components/schemas/State"
+            - type: "null"
+        licenseStatus:
+          oneOf:
+            - $ref: "#/components/schemas/State"
+            - type: "null"
+        driverResumeStatus:
+          oneOf:
+            - $ref: "#/components/schemas/State"
+            - type: "null"
+        backgroundStatus:
+          oneOf:
+            - $ref: "#/components/schemas/State"
+            - type: "null"
+
+    ContractorDocResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ContractorDocData"
+        Contratista:
+          description: RUT asociado a los documentos
+          type: string
+        documento:
+          description: Tipo de entidad solicitada
+          type: string
+
+    ContractorDocData:
+      type: array
+      description: Datos de los documentos
+      items:
+        $ref: "#/components/schemas/DocumentItem"
+
+    DocumentItem:
+      type: object
+      properties:
+        documentTypeId:
+          type: number
+          description: |
+            Id del tipo de documento:
+            - Para empresa:
+              - 16: F30 (Total pagos)
+              - 17: F30 - 1 (Pagos individuales)
+              - 18: Carpeta Tributaria
+            - Para persona natural:
+              - 30: Cedula de Identidad
+              - 31: Licencia de conducir
+              - 32: Certificado de Antecedentes
+              - 33: Hoja de vida del conductor
+          example: 18
+        documentTypeName:
+          type: string
+          description: Nombre del tipo de documento
+          example: Carpeta Tributaria
+        # reason:
+        #   type: string
+        #   description: Motivo del documento
+        documentEntityId:
+          type: number
+          description: |
+            Id de la entidad asociada al documento
+            - 1: Contratista
+          example: 1
+        documentEntityName:
+          type: string
+          description: Nombre de la entidad asociada al documento
+          example: Contratista
+        contentType:
+          type: string
+          description: |
+            Tipos de documentos:
+            - application/pdf
+            - image/jpeg
+            - image/png
+          example: application/pdf
+        # side:
+        #   type: string
+        #   description: |
+        #     Tipos de documentos:
+        #     - frontal
+        #     - trasera
+        #   example: null
+        # pendingSide:
+        #   type: boolean
+        #   description: Indica si el documento tiene un lado pendiente de cargar
+        #   example: false
+        statusId:
+          type: number
+          description: Estado del documento
+          example: 5
+        statusName:
+          type: string
+          description: Estado del documento
+          example: Documento cargado
+        # historySpan:
+        #   type: number
+        #   description: Meses de historial considerados para el documento
+        #   example: 6
+        # period:
+        #   type: string
+        #   description: Periodo asociado al documento en formato MM/AAAA
+        #   example: "07/2025"
+        # complementaryData:
+        #   type: object
+        #   description: Datos complementarios asociados al documento
+        #   example: {}
+        # expirationDate:
+        #   type: string
+        #   format: date-time
+        #   nullable: true
+        #   description: Fecha de expiración del documento (si aplica)
+        #   example: null
+        url:
+          type: string
+          description: Ruta del documento para descarga. Expiración de 1 hora, se genera nuevo link al consultar.
+          example: https://bucket.s3.amazonaws.com/ddf5b114-f0e9-4058-ad2e-a194e78a3850.png
+
+    VehicleDocResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/VehicleDocData"
+        Vehicle:
+          description: Patente del vehículo solicitado
+          type: string
+        documento:
+          description: Tipo de entidad solicitada
+          type: string
+
+    VehicleDocData:
+      type: object
+      properties:
+        total:
+          type: number
+          description: Total de documentos
+          example: 1
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocItemVehicle"
+
+    StaffDocResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/StaffDocData"
+        Personal:
+          type: string
+          description: RUT personal asociado a los documentos
+          example: "87654321-0"
+        documento:
+          type: string
+          description: Tipo de entidad solicitada
+          example: Personal
+
+    StaffDocData:
+      type: object
+      properties:
+        total:
+          type: number
+          description: Total de documentos
+          example: 1
+        totalPages:
+          type: number
+          description: Total de paginas
+          example: 1
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocItemStaff"
+
+    DocItemVehicle:
+      type: object
+      properties:
+        fileName:
+          type: string
+          description: Nombre del documento
+          example: a67734d8-3d48-488b-bd5a-3b848d91c089.jpg
+        contentType:
+          type: string
+          description: |
+            Tipos de documentos:
+            - application/pdf
+            - image/jpeg
+            - image/png
+          example: application/pdf
+        patent:
+          type: string
+          description: Patente del vehículo
+          example: ABCD12
+        rut:
+          type: string
+          description: RUT del personal
+          example: 87654321-0
+        reason:
+          type: string
+          description: Motivo del documento
+          example: Por vencer
+        documentTypeId:
+          type: number
+          description: ID del tipo de documento
+          example: 24
+        documentTypeName:
+          type: string
+          description: |
+            Nombre del tipo de documento
+            - 24: Permiso de circulacion
+            - 25: Revisión técnica
+            - 26: SOAP
+            - 28: Póliza de seguro
+            - 29: Pagos del seguro
+          example: Permiso de circulacion
+        documentEntityId:
+          type: number
+          description: ID de la entidad asociada al documento
+          example: 3
+        documentEntityName:
+          type: string
+          description: |
+            Nombre de la entidad asociada al documento
+            - 3: Vehículos
+            - 5: Acoplados
+          example: Vehículos
+        side:
+          type: string
+          description: |
+            Lado del documento:
+            - frontal
+            - trasero
+          example: frontal
+        pendingSide:
+          type: boolean
+          description: Indica si el documento tiene un lado pendiente de cargar
+          example: false
+        statusId:
+          type: number
+          description: ID del estado del documento
+          example: 1
+        statusName:
+          type: string
+          description: |
+            Nombre del estado del documento:
+            - Valido
+            - Documento cargado
+            - Sin información
+            - No vigente
+            - Por vencer
+            - Invalido
+            - Solicitud pendiente
+            - Solicitud completada
+            - Solicitud fuera de plazo
+            - Pendiente de subir
+            - Pendiente de validar
+            - Error de lectura
+            - Rechazado
+          example: Pendiente de validar
+        uploadDate:
+          type: string
+          description: Fecha de carga del documento.
+          example: 2025-08-14T14:52:33.158Z
+        expirationDate:
+          type: string
+          description: Fecha de expiración del documento.
+          example: 2025-01-01
+        period:
+          type: string
+          description: Periodo del documento.
+          example: 01-2025
+        complementaryData:
+          type: object
+          description: Datos complementarios asociados al documento
+          example: {}
+        historySpan:
+          type: number
+          description: Meses de historial considerados para el documento
+          example: 6
+        complementaryDocumentFields:
+          type: object
+          description: Campos complementarios asociados al documento
+          example: []
+        url:
+          type: string
+          description: Ruta del documento para descarga. Expiración de 1 hora, se genera nuevo link al consultar.
+          example: https://bucket.s3.amazonaws.com/ddf5b114-f0e9-4058-ad2e-a194e78a3850.png
+
+    DocItemStaff:
+      type: object
+      properties:
+        fileName:
+          type: string
+          description: Nombre del documento
+          example: a67734d8-3d48-488b-bd5a-3b848d91c089.jpg
+        contentType:
+          type: string
+          description: |
+            Tipos de documentos:
+            - application/pdf
+            - image/jpeg
+            - image/png
+          example: application/pdf
+        patent:
+          type: string
+          description: Patente del vehículo
+          example: ABCD12
+        rut:
+          type: string
+          description: RUT del personal
+          example: 87654321-0
+        reason:
+          type: string
+          description: Motivo del documento
+          example: Por vencer
+        documentTypeId:
+          type: number
+          description: ID del tipo de documento
+          example: 31
+        documentTypeName:
+          type: string
+          description: |
+            Nombre del tipo de documento
+            - 30: Cedula de Identidad
+            - 31: Licencia de conducir
+            - 32: Certificado de Antecedentes
+            - 33: Hoja de vida del conductor
+          example: Permiso de circulacion
+        documentEntityId:
+          type: number
+          description: ID de la entidad asociada al documento
+          example: 4
+        documentEntityName:
+          type: string
+          description: |
+            Nombre de la entidad asociada al documento
+            - 4: Personal
+          example: Vehículos
+        side:
+          type: string
+          description: |
+            Lado del documento:
+            - frontal
+            - trasero
+          example: frontal
+        pendingSide:
+          type: boolean
+          description: Indica si el documento tiene un lado pendiente de cargar
+          example: false
+        statusId:
+          type: number
+          description: ID del estado del documento
+          example: 1
+        statusName:
+          type: string
+          description: |
+            Nombre del estado del documento:
+            - Valido
+            - Documento cargado
+            - Sin información
+            - No vigente
+            - Por vencer
+            - Invalido
+            - Solicitud pendiente
+            - Solicitud completada
+            - Solicitud fuera de plazo
+            - Pendiente de subir
+            - Pendiente de validar
+            - Error de lectura
+            - Rechazado
+          example: Pendiente de validar
+        uploadDate:
+          type: string
+          description: Fecha de carga del documento.
+          example: 2025-08-14T14:52:33.158Z
+        expirationDate:
+          type: string
+          description: Fecha de expiración del documento (si aplica).
+          example: 2033-02-04T00:00:00.000Z
+        period:
+          type: string
+          description: Periodo del documento.
+          example: 01-2025
+        historySpan:
+          type: number
+          description: Meses de historial considerados para el documento
+          example: 6
+        complementaryData:
+          type: object
+          description: Datos complementarios asociados al documento
+          example: {}
+        # complementaryDocumentFields:
+        #   type: array
+        #   description: Campos complementarios asociados al documento
+        #   items:
+        #     $ref: "#/components/schemas/complementaryDocumentFields"
+        url:
+          type: string
+          description: Ruta del documento para descarga. Expiración de 1 hora, se genera nuevo link al consultar.
+          example: https://bucket.s3.amazonaws.com/ddf5b114-f0e9-4058-ad2e-a194e78a3850.png
+
+    # complementaryDocumentFields:
+    #   type: object
+    #   properties:
+    #     id:
+    #       description: Identificador unico del registro
+    #       type: number
+    #       example: 1
+    #     fieldKey:
+    #       description: Clave unica del registro
+    #       type: string
+    #       example: "installment"
+    #     fieldName:
+    #       description: Nombre del documento complementario
+    #       type: string
+    #       example: "Cuota"
+    #     fieldTypeId:
+    #       description: ID del tipo de campo
+    #       type: number
+    #       example: 2
+    #     isRequired:
+    #       description: Indica si el campo es requerido
+    #       type: boolean
+    #       example: true
+
+security:
+  - ApiKeyAuth: []
