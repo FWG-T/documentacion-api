@@ -1,0 +1,3802 @@
+openapi: 3.0.3
+info:
+  title: Webhook para Notificaciones de Api-Testia
+  description: >
+    Este documento describe los pasos necesarios y el funcionamiento del webhook
+    utilizado para recibir notificaciones de Testia en tiempo real.
+  version: 1.0.1
+
+tags:
+  - name: EntityEventWebhook
+    description: |
+      El webhook es un mecanismo que permite a Api-Testia notificar eventos importantes a tu sistema en tiempo real. 
+      A través de este, podrás recibir notificaciones sobre estados de documentos e información de las distintas plataformas,
+      sobre el personal, vehículo y contatista, directamente en un endpoint definido por tu aplicación.
+
+      Para que Testia pueda enviar notificaciones a tu sistema, es necesario proporcionar una URL donde se recibirán estas 
+      notificaciones mediante el método HTTP POST.
+
+paths:
+  "Ejemplo:":
+    post:
+      tags:
+        - Estructura de los Eventos
+      summary: Descripción general de la estructura de los eventos.
+      description: |
+        Este endpoint recibe notificaciones enviadas por Api-Testia sobre información relacionada
+        a el personal, vehículo y contratistas.
+
+        **Funcionamiento**
+        - **Notificación a Testia:** El administrador del sistema que desee recibir notificaciones deberá comunicar a Api-Testia 
+          la URL donde desea recibir los eventos.
+        - **Método de Envío:** Todas las notificaciones se enviarán mediante el método HTTP POST. El contenido de la notificación 
+          estará en formato JSON para facilitar la integración.
+
+        **Estructura del Mensaje**
+        - `action`: Acción realizada.
+        - `status`: Estado de la operación.
+        - `operationType`: Tipo de operación.
+        - `entity`: Entidad sobre la que se realizó la operación.
+        - `description`: Descripción del evento.
+        - `timestamp`: Marca temporal del evento en formato ISO 8601. 
+        - `payload`: Objeto con la infromación relacionada.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de creación o actualización de contratista recibida
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessCreateStaffEventDTO"
+                  - type: object
+  "Create-Staff":
+    post:
+      tags:
+        - Notificación al crear personal
+      summary: Notificación creación de staff.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un personal.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de creación de personal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessStaffCreate"
+                  - type: object
+
+  "Update-Staff":
+    post:
+      tags:
+        - Notificación al actualizar un personal
+      summary: Notificación actualizar de staff.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un personal.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de personal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessStaffUpdate"
+                  - type: object
+
+  "Create-Vehicle":
+    post:
+      tags:
+        - Notificación al crear un vehículo
+      summary: Notificación crear de vehículo.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un vehículo.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de creación de vehículo
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/VehicleCreateResponse"
+                  - type: object
+
+  "Update-Vehicle":
+    post:
+      tags:
+        - Notificación al actualizar un vehículo
+      summary: Notificación actualizar de vehículo.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualización de un vehículo.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualización de vehículo
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/UpdateVehicle"
+                  - type: object
+
+  "Create-Contractor":
+    post:
+      tags:
+        - Notificación al crear  un contratista
+      summary: Notificación crear un contratista.
+      description: Definición detallada de la estructura estándar de notificación que indica la creación de un contratista.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de creación de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ContractorReviewResponse"
+                  - type: object
+
+  "Update-Contractor":
+    post:
+      tags:
+        - Notificación al actualizar  un contratista
+      summary: Notificación al actualizar un contratista.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar de un contratista.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessContractorupdate"
+                  - type: object
+
+  "Status-Document":
+    post:
+      tags:
+        - Notificación al actualizar un documento
+      summary: Notificación al actualizar un documento.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar de un documento.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de documentos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/DocumentAlertResponse"
+                  - type: object
+
+  "Status-Antecedentes ":
+    post:
+      tags:
+        - Notificación al actualizar  estado de antecedentes
+      summary: Notificación al actualizar estado de antecedentes .
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar de estado de antecedentes .
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de personal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/StaffUpdatedAntecedenteResponse"
+                  - type: object
+
+  "arrears-Contractor":
+    post:
+      tags:
+        - Notificación al actualizar  estado de Moras
+      summary: Notificación al actualizar estado de Moras.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar de estado de Moras.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ContractorUpdatedArrearsResponse"
+                  - type: object
+
+  "Trials-Staff":
+    post:
+      tags:
+        - Notificación al actualizar registros de juicios penales o civiles
+      summary: Notificación al actualizar registros de juicios penales o civiles.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar  registros de juicios penales o civiles.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de personal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/StaffUpdatedCivilCriminalTrialsResponse"
+                  - type: object
+
+  "driver-Resume-Staff":
+    post:
+      tags:
+        - Notificación al actualizar registros para la hoja de vida del conductor
+      summary: Notificación al actualizar registros para la hoja de vida del conductor.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar  registros para la hoja de vida del conductor.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de personal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/DriverLifeSheet"
+                  - type: object
+
+  "Fines-Contractor":
+    post:
+      tags:
+        - Notificación al actualizar registros de multas asociadas al contratista
+      summary: Notificación al actualizar registros de multas asociadas al contratista.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar registros de multas asociadas al contratista.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/contractorUpdatedFinesResponse"
+                  - type: object
+
+  "Soap-Vehicle":
+    post:
+      tags:
+        - Notificación al actualizar registros SOAP asociadas al vehículo
+      summary: Notificación al actualizar registros SOAP asociadas al vehículo.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar  registros SOAP asociadas al vehículo.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de personal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/VehicleUpdatedSoapResponse"
+                  - type: object
+
+  "Fines-Vehicle":
+    post:
+      tags:
+        - Notificación al actualizar registros de multas asociadas al vehículo
+      summary: Notificación al actualizar registros de multas asociadas al vehículo.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar  registros de multas asociadas al vehículo.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de vehículo
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/VehicleFinesResponse"
+                  - type: object
+
+  "Heist-Vehicle":
+    post:
+      tags:
+        - Notificación para indicar si el  vehículo posee encargo por robo
+      summary: Notificación al actualizar si el  vehículo posee encargo por robo.
+      description: Definición detallada de la estructura estándar de notificación que indica la actualizar  registros de multas asociadas al vehículo.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de vehículo
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/VehicleUpdateTheftResponse"
+                  - type: object
+
+  "Info-Vehicle":
+    post:
+      tags:
+        - Notificación para actualizar información general del vehículo
+      summary: Notificación para actualizar información general del vehículo
+      description: Definición detallada de la estructura estándar de notificación actualizar información general del vehículo.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de vehículo
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/VehicleUpdateAutofacResponse"
+                  - type: object
+
+  "Tax-Situation-contractor":
+    post:
+      tags:
+        - Notificación para actualizar información Situación tributaria.
+      summary: Notificación para actualizar información Situación tributaria
+      description: Definición detallada de la estructura estándar de notificación actualizar información Situación tributaria.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ContractorTaxSituationUpdateResponse"
+                  - type: object
+
+  "Bankruptcy-Bulletin-Contractor":
+    post:
+      tags:
+        - Notificación para actualizar información del boletín concursal.
+      summary: Notificación para actualizar información del boletín concursal
+      description: Definición detallada de la estructura estándar de notificación actualizar información del boletín concursal.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ContractorBankruptcyBulletinUpdateResponse"
+                  - type: object
+
+  "Difficult-Control-Contractor":
+    post:
+      tags:
+        - Notificación para informar si la contratista es considerada contribuyente de difícil fiscalización.
+      summary: Notificación para informar si la contratista es considerada contribuyente de difícil fiscalización.
+      description: Definición detallada de la estructura estándar de notificación para informar si la contratista es considerada contribuyente de difícil fiscalización.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ContractorDifficultFiscalizationContributorUpdateResponse"
+                  - type: object
+
+  "Info-Staff":
+    post:
+      tags:
+        - Notificación para informar actualización del personal
+      summary: Notificación para informar actualización del personal.
+      description: Definición detallada de la estructura estándar de notificación para informar actualización del personal  .
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de personal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/StaffUpdatedInfoResponse"
+                  - type: object
+  "Financial-Situation-Contractor":
+    post:
+      tags:
+        - Notificación para informar actualización financiera del contratista
+      summary: Notificación para informar actualización financiera del contratista.
+      description: Definición detallada de la estructura estándar de notificación para informar actualización financiera del contratista.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ContractorUpdatedFinancialInfoResponse"
+                  - type: object
+
+  "Corporate-Situation-Contractor":
+    post:
+      tags:
+        - Notificación para informar actualización de información Societaria del contratista
+      summary: Notificación para informar actualización de información Societaria del contratista.
+      description: Definición detallada de la estructura estándar de notificación para informar actualización de información  Societaria del contratista.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ContractorUpdatedSocietaryInfoResponse"
+                  - type: object
+
+  "Technical-Review-Vehicle":
+    post:
+      tags:
+        - Notificación para informar actualización de información de la revisión técnica del vehículo
+      summary: Notificación para informar actualización de información de la revisión técnica del vehículo.
+      description: Definición detallada de la estructura estándar de notificación para informar actualización de información de la revisión técnica del vehículo.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Solicitud de actualizar de contratista
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/VehicleUpdatedTechnicalReviewResponse"
+                  - type: object
+
+  "IA-Verification-Response":
+    post:
+      tags:
+        - Notificación para informar respuesta de la IA
+      summary: Notificación para informar respuesta de la IA.
+      description: Definición de la notificación estándar para informar que un documento ha sido rechazado. Este webhook es enviado únicamente cuando el documento no es legible/rechazado.
+      operationId: GestionEventos
+      responses:
+        "201":
+          description: Respuesta de la IA al validar un documento
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/IAVerificationResponse"
+                  - type: object
+
+components:
+  schemas:
+    VehicleCreateResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, indicando qué operación fue ejecutada.
+          example: "vehicle.create"
+        status:
+          type: string
+          description: Estado de la operación, indicando si fue exitosa o fallida.
+          example: "success"
+        operationType:
+          type: string
+          description: Tipo de operación realizada.
+          example: "create"
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción.
+          example: "vehicle"
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación.
+          example: "creación de vehiculo exitosa"
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta en la que se realizó la operación.
+          example: "2024-12-19T15:26:10.046Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con la creación del vehículo.
+          properties:
+            vehicle:
+              type: object
+              description: Detalles del vehículo creado.
+              properties:
+                patent:
+                  type: string
+                  description: Patente del vehículo.
+                  example: "RZVL93"
+                brand:
+                  type: string
+                  nullable: true
+                  description: Marca del vehículo.
+                model:
+                  type: string
+                  nullable: true
+                  description: Modelo del vehículo.
+                vehicle_year:
+                  type: integer
+                  nullable: true
+                  description: Año del vehículo.
+                vehicle_color:
+                  type: string
+                  nullable: true
+                  description: Color del vehículo.
+                engine_number:
+                  type: string
+                  nullable: true
+                  description: Número del motor.
+                chassis_number:
+                  type: string
+                  nullable: true
+                  description: Número de chasis.
+                vin_number:
+                  type: string
+                  nullable: true
+                  description: Número de identificación del vehículo (VIN).
+                fuel:
+                  type: string
+                  nullable: true
+                  description: Tipo de combustible.
+                pvb:
+                  type: number
+                  nullable: true
+                  description: Peso bruto vehicular (PVB).
+                vehicle_type:
+                  type: string
+                  nullable: true
+                  description: Tipo de vehículo.
+                owner_name:
+                  type: string
+                  nullable: true
+                  description: Nombre del propietario.
+                owner_rut:
+                  type: string
+                  nullable: true
+                  description: RUT del propietario.
+                owner_acquisition_date:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: Fecha de adquisición por parte del propietario.
+                owner_repertoire:
+                  type: string
+                  nullable: true
+                  description: Repertorio del propietario.
+                owner_number:
+                  type: string
+                  nullable: true
+                  description: Número del propietario.
+                owner_date:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: Fecha registrada del propietario.
+                domain_limitations:
+                  type: string
+                  nullable: true
+                  description: Limitaciones de dominio del vehículo.
+            documents:
+              type: array
+              description: Documentos asociados al vehículo.
+              items:
+                type: object
+                properties:
+                  demand:
+                    type: string
+                    description: Demanda asociada al documento (obligatoria u opcional).
+                    example: "obligatorio"
+                  parent:
+                    type: string
+                    description: Identificador del vehículo asociado al documento.
+                    example: "RZVL93"
+                  document:
+                    type: string
+                    description: Nombre del documento.
+                    example: "Permiso de circulación"
+                  documentType:
+                    type: integer
+                    description: Tipo del documento.
+                    example: 24
+                  status:
+                    type: string
+                    description: Estado actual del documento.
+                    example: "Pendiente de subir"
+                  color:
+                    type: string
+                    description: Color asociado al estado del documento.
+                    example: "Rojo"
+
+    ContractorReviewResponse:
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, indicando qué operación fue ejecutada en el vehículo.
+          example: contractor.create
+        status:
+          type: string
+          description: Estado de la operación, indicando si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, especificando el contexto de la acción (en este caso, información adicional).
+          example: create
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción (en este caso, vehículo).
+          example: vehicle
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, indicando que se actualizó la revisión técnica del vehículo.
+          example: se actualiza información societaria
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta en la que se realizó la operación.
+          example: "2024-12-16T13:03:59.278Z"
+        payload:
+          type: object
+          properties:
+            contractor:
+              type: object
+              description: Información del contratista y detalles de su revisión.
+              properties:
+                startReview:
+                  type: string
+                  format: date
+                  description: Fecha de inicio de la revisión.
+                  example: "2024-12-01"
+                endReview:
+                  type: string
+                  format: date
+                  description: Fecha de finalización de la revisión.
+                  example: "2024-12-31"
+                contractor:
+                  type: object
+                  description: Detalles del contratista revisado.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del contratista.
+                      example: "78853890-1"
+                    businessName:
+                      type: string
+                      description: Razón social del contratista.
+                      example: "ingenieria y construcciones copayapu ltda"
+                    name:
+                      type: string
+                      nullable: true
+                      description: Nombre del contratista (si aplica).
+                    lastName:
+                      type: string
+                      nullable: true
+                      description: Apellido del contratista (si aplica).
+                    contractorType:
+                      type: object
+                      description: Tipo de contratista.
+                      properties:
+                        name:
+                          type: string
+                          description: Nombre del tipo de contratista.
+                          example: "Empresa"
+                    companyPartner:
+                      type: array
+                      description: Lista de socios de la empresa.
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            description: Identificador único del socio.
+                            example: "777fac3f-f51a-4716-adb3-08358f44ba2a"
+                          rut:
+                            type: string
+                            description: RUT del socio.
+                            example: "14389541-6"
+                          name:
+                            type: string
+                            description: Nombre del socio.
+                            example: "Marcela"
+                          lastName:
+                            type: string
+                            description: Apellido del socio.
+                            example: "Retamal"
+                          email:
+                            type: string
+                            format: email
+                            description: Correo electrónico del socio.
+                            example: "marcela.retamal@orbis-dev.cl"
+                          phoneNumber:
+                            type: string
+                            description: Número de teléfono del socio.
+                            example: "+56971012727"
+                          userId:
+                            type: string
+                            nullable: true
+                            description: Identificador del usuario (si aplica).
+                  serviceType:
+                    type: object
+                    description: Tipo de servicio asociado al contratista.
+                    properties:
+                      name_service_type:
+                        type: string
+                        description: Nombre del tipo de servicio.
+                        example: "Monitoreo"
+                  reviewCompanies:
+                    type: array
+                    description: Empresas relacionadas con la revisión.
+                    items:
+                      type: object
+                  fullNameUser:
+                    type: string
+                    nullable: true
+                    description: Nombre completo del usuario relacionado.
+                  additionalFields:
+                    type: object
+                    nullable: true
+                    description: Campos adicionales relacionados con el contratista.
+                  additionalDocuments:
+                    type: array
+                    nullable: true
+                    description: Documentos adicionales relacionados con el contratista.
+                    items:
+                      type: object
+                  isActive:
+                    type: boolean
+                    description: Indicador de si la revisión está activa.
+                    example: true
+              documents:
+                type: array
+                description: Documentos asociados al contratista.
+                items:
+                  type: object
+                  properties:
+                    demand:
+                      type: string
+                      description: Demanda asociada al documento (obligatoria u opcional).
+                      example: "obligatorio"
+                    rut:
+                      type: string
+                      description: RUT del contratista asociado al documento.
+                      example: "78853890-1"
+                    document:
+                      type: string
+                      description: Nombre del documento.
+                      example: "F30 (Total pagos)"
+                    documentType:
+                      type: integer
+                      description: Tipo del documento.
+                      example: 16
+                    status:
+                      type: string
+                      description: Estado actual del documento.
+                      example: "Pendiente de subir"
+                    color:
+                      type: string
+                      description: Color asociado al estado del documento.
+                      example: "Rojo"
+
+    VehicleUpdatedTechnicalReviewResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, indicando qué operación fue ejecutada en el vehículo.
+          example: vehicle.updated.technical-review
+        status:
+          type: string
+          description: Estado de la operación, indicando si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, especificando el contexto de la acción (en este caso, información adicional).
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción (en este caso, vehículo).
+          example: vehicle
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, indicando que se actualizó la revisión técnica del vehículo.
+          example: se actualiza información societaria
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta en la que se realizó la operación.
+          example: "2024-12-16T13:03:59.278Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con la revisión técnica actualizada del vehículo.
+          properties:
+            vehicle:
+              type: object
+              description: Detalles del vehículo actualizado.
+              properties:
+                technicalReview:
+                  type: object
+                  description: Información específica de la revisión técnica del vehículo.
+                  properties:
+                    patent:
+                      type: string
+                      description: Patente del vehículo revisado.
+                      example: AB123CD
+                    reviewDate:
+                      type: string
+                      format: date
+                      description: Fecha en la que se realizó la revisión técnica.
+                      example: 2024-06-15
+                    plantCode:
+                      type: string
+                      description: Código identificador de la planta donde se realizó la revisión técnica.
+                      example: P-9876
+                    plant:
+                      type: string
+                      description: Nombre de la planta de revisión técnica.
+                      example: Planta Revisión Técnica Valparaíso
+                    certifiedNumber:
+                      type: string
+                      description: Número del certificado emitido tras la revisión técnica.
+                      example: CRT-0012456789
+                    status:
+                      type: string
+                      description: Estado de la revisión técnica (por ejemplo, Aprobado o Rechazado).
+                      example: Aprobado
+                    expirationDate:
+                      type: string
+                      format: date
+                      description: Fecha de vencimiento de la revisión técnica.
+                      example: 2025-06-14
+                    greenStamp:
+                      type: string
+                      description: Indicador de si cuenta con el sello verde (Sí o No).
+                      example: Sí
+                    expiringNotificationsCount:
+                      type: integer
+                      description: Número de notificaciones enviadas sobre la próxima expiración de la revisión técnica.
+                      example: 2
+                    expiredNotificationsCount:
+                      type: integer
+                      description: Número de notificaciones enviadas sobre la revisión técnica ya vencida.
+                      example: 0
+
+    # ContractorUpdatedSocietaryInfoResponse:
+    #   type: object
+    #   properties:
+    #     action:
+    #       type: string
+    #       description: Acción realizada en el sistema, indicando qué operación fue ejecutada en el contratista.
+    #       example: contractor.updated.info-societaria
+    #     status:
+    #       type: string
+    #       description: Estado de la operación, indicando si fue exitosa o fallida.
+    #       example: success
+    #     operationType:
+    #       type: string
+    #       description: Tipo de operación realizada, especificando el contexto de la acción (en este caso, información adicional).
+    #       example: additional-info
+    #     entity:
+    #       type: string
+    #       description: Entidad que se vio afectada por la acción (en este caso, contratista).
+    #       example: contractor
+    #     description:
+    #       type: string
+    #       description: Descripción breve del propósito de la operación, indicando que se actualizó la información societaria del contratista.
+    #       example: se actualiza información societaria
+    #     timestamp:
+    #       type: string
+    #       format: date-time
+    #       description: Fecha y hora exacta en la que se realizó la operación.
+    #       example: "2024-12-13T19:25:44.115Z"
+    #     payload:
+    #       type: object
+    #       description: Información adicional relacionada con la actualización societaria del contratista.
+    #       properties:
+    #         contractor:
+    #           type: object
+    #           description: Detalles del contratista actualizado.
+    #           properties:
+    #             societaryInformation:
+    #               type: array
+    #               description: Lista de información societaria del contratista.
+    #               items:
+    #                 type: object
+    #                 properties:
+    #                   businessName:
+    #                     type: string
+    #                     description: Razón social del contratista.
+    #                     example: Comercial XYZ Ltda.
+    #                   rut:
+    #                     type: string
+    #                     description: RUT del contratista relacionado.
+    #                     example: 76543210-8
+    #                   dv:
+    #                     type: string
+    #                     description: Dígito verificador del RUT.
+    #                     example: 8
+    #                   rutConsulted:
+    #                     type: string
+    #                     description: RUT consultado para obtener la información societaria.
+    #                     example: 12345678-9
+    #                   dvConsulted:
+    #                     type: string
+    #                     description: Dígito verificador del RUT consultado.
+    #                     example: 9
+    #                   participationExtract:
+    #                     type: string
+    #                     description: Extracto de participación registrado en actas oficiales.
+    #                     example: Participación registrada en Junta Ordinaria de Socios 2023
+    #                   participationExtractDate:
+    #                     type: string
+    #                     format: date
+    #                     description: Fecha en la que se registró el extracto de participación.
+    #                     example: 2023-12-15
+    #                   partnerPercentageParticipation:
+    #                     type: number
+    #                     description: Porcentaje de participación del socio.
+    #                     example: 25
+    #                   participationAmount:
+    #                     type: number
+    #                     description: Monto asociado a la participación del socio.
+    #                     example: 50000000
+    #                   typeInformation:
+    #                     type: string
+    #                     description: Tipo de información registrada (por ejemplo, PARTNER).
+    #                     example: PARTNER
+    #                   moneyType:
+    #                     type: string
+    #                     description: Tipo de moneda asociada a los valores registrados.
+    #                     example: CLP
+    #             societaryDetail:
+    #               type: object
+    #               description: Información adicional detallada sobre aspectos societarios del contratista.
+    #               example: {}
+
+    ContractorUpdatedSocietaryInfoResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, indicando qué operación fue ejecutada en el contratista.
+          example: contractor.updated.info-societaria
+        status:
+          type: string
+          description: Estado de la operación, indicando si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, especificando el contexto de la acción (en este caso, información adicional).
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción (en este caso, contratista).
+          example: contractor
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, indicando que se actualizó la información societaria del contratista.
+          example: se actualiza información societaria
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta en la que se realizó la operación.
+          example: "2024-12-13T19:25:44.115Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con la actualización societaria del contratista.
+          properties:
+            contractor:
+              type: object
+              description: Detalles del contratista actualizado.
+              properties:
+                societaryInformation:
+                  type: array
+                  description: Lista de información societaria del contratista.
+                  items:
+                    type: object
+                    properties:
+                      businessName:
+                        type: string
+                        description: Razón social del contratista.
+                        example: Comercial XYZ Ltda.
+                      rut:
+                        type: string
+                        description: RUT del contratista relacionado.
+                        example: 76.543.210-8
+                      dv:
+                        type: string
+                        description: Dígito verificador del RUT.
+                        example: 8
+                      rutConsulted:
+                        type: string
+                        description: RUT consultado para obtener la información societaria.
+                        example: 12.345.678-9
+                      dvConsulted:
+                        type: string
+                        description: Dígito verificador del RUT consultado.
+                        example: 9
+                      participationExtract:
+                        type: string
+                        description: Extracto de participación registrado en actas oficiales.
+                        example: Participación registrada en Junta Ordinaria de Socios 2023
+                      participationExtractDate:
+                        type: string
+                        format: date-time
+                        description: Fecha en la que se registró el extracto de participación (ISO 8601 o null).
+                        example: 2023-12-15T00:00:00.000Z
+                        nullable: true
+                      partnerPercentageParticipation:
+                        type: string
+                        description: Porcentaje de participación del socio.
+                        example: "25"
+                      participationAmount:
+                        type: string
+                        description: Monto asociado a la participación del socio.
+                        example: "50000000"
+                      typeInformation:
+                        type: string
+                        description: Tipo de información registrada (por ejemplo, PARTNER).
+                        example: PARTNER
+                      moneyType:
+                        type: string
+                        description: Tipo de moneda asociada a los valores registrados.
+                        example: "$"
+                      deletedAt:
+                        type: string
+                        format: date-time
+                        description: Fecha de eliminación lógica del registro (puede ser nulo).
+                        example: null
+                        nullable: true
+                societaryDetail:
+                  type: object
+                  description: Información adicional detallada sobre aspectos societarios del contratista.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del contratista.
+                      example: "77167883"
+                    societyName:
+                      type: string
+                      description: Razón social de la sociedad.
+                      example: "COMERCIALIZADORA FERRETERA Y ELECTRICA MAULE SUR SpA"
+                    year:
+                      type: string
+                      nullable: true
+                      description: Año de constitución de la sociedad (puede ser nulo).
+                      example: null
+                    personType:
+                      type: string
+                      description: Tipo de persona jurídica o natural.
+                      example: "J"
+                    capitalAmount:
+                      type: number
+                      description: Monto de capital de la sociedad.
+                      example: 4000000
+                    capitalMoneyType:
+                      type: string
+                      description: Tipo de moneda del capital.
+                      example: "$"
+                    constitutionDate:
+                      type: string
+                      format: date-time
+                      nullable: true
+                      description: Fecha de constitución de la sociedad (puede ser nulo).
+                      example: null
+                    deletedAt:
+                      type: string
+                      format: date-time
+                      nullable: true
+                      description: Fecha de eliminación lógica del registro (puede ser nulo).
+                      example: null
+
+    ContractorUpdatedFinancialInfoResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, indicando qué operación fue ejecutada en el contratista.
+          example: contractor.updated.financialInformation
+        status:
+          type: string
+          description: Estado de la operación, indicando si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, especificando el contexto de la acción (en este caso, información adicional).
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción (en este caso, contratista).
+          example: contractor
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, indicando que se actualizó la información financiera del contratista.
+          example: se actualiza información financiera
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta en la que se realizó la operación.
+          example: "2024-12-13T19:07:53.048Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con la actualización financiera del contratista.
+          properties:
+            contractor:
+              type: object
+              description: Detalles del contratista actualizado.
+              properties:
+                financialInformation:
+                  type: object
+                  description: Información financiera actualizada del contratista.
+                  properties:
+                    debtAmount:
+                      type: string
+                      description: Monto total de la deuda registrada para el contratista.
+                      example: "15000000"
+                    predictorScore:
+                      type: string
+                      description: Puntaje del predictor financiero del contratista.
+                      example: "750"
+                    numCreditors:
+                      type: integer
+                      description: Número de acreedores registrados para el contratista.
+                      example: 5
+                    numDocuments:
+                      type: integer
+                      description: Número total de documentos financieros asociados al contratista.
+                      example: 12
+                    contractor:
+                      type: object
+                      description: Información básica del contratista.
+                      properties:
+                        rut:
+                          type: string
+                          description: RUT del contratista.
+                          example: "76.543.210-8"
+                        businessName:
+                          type: string
+                          description: Razón social del contratista si aplica.
+                          example: "Constructora XYZ Ltda."
+                        name:
+                          type: string
+                          description: Nombre del contratista persona natural si aplica.
+                          example: "Juan"
+                        lastName:
+                          type: string
+                          description: Apellido del contratista persona natural si aplica.
+                          example: "Pérez"
+
+    StaffUpdatedInfoResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, indicando qué operación fue ejecutada en el personal.
+          example: staff.updated.info
+        status:
+          type: string
+          description: Estado de la operación, indicando si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, especificando el contexto de la acción (en este caso, información adicional).
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción (en este caso, personal).
+          example: staff
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, que en este caso indica la actualización de la información relacionada con el contratista y su estado.
+          example: Información de la persona actualizada SII
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta en la que se realizó la operación.
+          example: "2024-12-13T18:41:45.881Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con el personal y su actualización.
+          properties:
+            staff:
+              type: object
+              description: Detalles del personal actualizado.
+              properties:
+                updatedContractor:
+                  type: object
+                  description: Información actualizada del contratista asociado al personal.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del contratista asociado al personal.
+                      example: "12.345.678-9"
+                    expirationDate:
+                      type: string
+                      format: date
+                      description: Fecha de expiración del contrato o relación asociada al contratista.
+                      example: "2024-12-31"
+                    nationality:
+                      type: string
+                      description: Nacionalidad del contratista o personal asociado.
+                      example: "Chilena"
+                    sex:
+                      type: string
+                      description: Sexo del contratista o personal asociado.
+                      example: "Masculino"
+                    age:
+                      type: string
+                      description: Edad del contratista o personal asociado.
+                      example: "35"
+                    civilStatus:
+                      type: string
+                      description: Estado civil del contratista o personal asociado.
+                      example: "Casado"
+                    status:
+                      type: string
+                      description: Estado actual del contratista o personal asociado.
+                      example: "Activo"
+
+    ContractorDifficultFiscalizationContributorUpdateResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema que indica qué operación se ejecutó en el contratista.
+          example: contractor.updated.difficultFiscalizationContributor
+        status:
+          type: string
+          description: Estado de la operación, indicando si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, especificando el contexto de la acción (en este caso, información adicional).
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción (en este caso, el contratista).
+          example: contractor
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, que en este caso indica la actualización de la información sobre la fiscalización difícil del contribuyente.
+          example: info-difficult-fiscalization-contributor
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta cuando se realizó la operación.
+          example: "2024-12-13T18:25:20.949Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con el contratista y su estado respecto a la fiscalización difícil.
+          properties:
+            contractor:
+              type: object
+              properties:
+                isDifficultFiscalizationContributor:
+                  type: string
+                  description: Indicador de si el contratista es considerado como contribuyente de fiscalización difícil.
+                  example: "Yes"
+                difficultFiscalizationCheckDate:
+                  type: string
+                  format: date-time
+                  description: Fecha en la que se realizó la verificación para determinar si el contratista es un contribuyente de fiscalización difícil.
+                  example: "2024-03-15T00:00:00.000Z"
+                contractor:
+                  type: object
+                  properties:
+                    businessName:
+                      type: string or null
+                      description: Razón social o nombre comercial del contratista si aplica.
+                      example: "Constructora XYZ"
+                    name:
+                      type: string or null
+                      description: Nombre del contratista tipo persona natural si aplica.
+                      example: "Pedro"
+                    lastName:
+                      type: string or null
+                      description: Apellido del contratista tipo persona natural si aplica.
+                      example: "Perez"
+                    rut:
+                      type: string or null
+                      description: RUT del contratista, que identifica al contribuyente.
+                      example: "76543210-8"
+
+    ContractorBankruptcyBulletinUpdateResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, que indica qué operación se ejecutó en el contratista.
+          example: contractor.updated.bankruptcyBulletinExist
+        status:
+          type: string
+          description: Estado de la operación, que puede indicar si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, que describe el contexto de la acción (por ejemplo, actualización de información adicional).
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción. En este caso, el contratista.
+          example: contractor
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, explicando lo que se actualizó en el boletín concursal.
+          example: Boletín concursal actualizado exitosamente
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta cuando se realizó la operación.
+          example: "2024-12-13T18:12:59.964Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con el contratista, que incluye los detalles del boletín concursal.
+          properties:
+            contractor:
+              type: object
+              properties:
+                bankruptcyBulletinExist:
+                  type: object
+                  description: Detalles del boletín concursal del contratista.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del contratista, que identifica al contribuyente.
+                      example: "12345678-9"
+                    requestId:
+                      type: string
+                      description: Identificador único de la solicitud de actualización del boletín concursal.
+                      example: "REQ-789456"
+                    records:
+                      type: object
+                      description: Objeto que contiene la lista de casos relacionados con el boletín concursal del contratista.
+                      properties:
+                        cases:
+                          type: array
+                          description: Lista de registros relacionados con el boletín concursal del contratista.
+                          items:
+                            type: object
+                            properties:
+                              caseNumber:
+                                type: string
+                                description: Número de caso asignado en el tribunal correspondiente.
+                                example: "2024-000123"
+                              court:
+                                type: string
+                                description: Nombre del tribunal donde se está llevando el caso.
+                                example: "Juzgado de Letras de Santiago"
+                              status:
+                                type: string
+                                description: Estado actual del caso.
+                                example: "En Proceso"
+                              dateFiled:
+                                type: string
+                                format: date
+                                description: Fecha en que se presentó el caso ante el tribunal.
+                                example: "2024-03-01"
+                              resolutionDate:
+                                type: string
+                                format: date
+                                description: Fecha en que se resolvió el caso o se tomó una decisión.
+                                example: "2023-08-15"
+                              details:
+                                type: string
+                                description: Detalles adicionales del caso, explicando las circunstancias o resolución.
+                                example: "Declaración de quiebra voluntaria por parte del deudor."
+                    contractor:
+                      type: object
+                      description: Información del contratista relacionada al boletín concursal.
+                      properties:
+                        rut:
+                          type: string
+                          description: RUT del contratista, que identifica al contribuyente.
+                          example: "77167883-1"
+                        businessName:
+                          type: string
+                          description: Razón social del contratista.
+                          example: "ferreteria los maestros spa"
+                        name:
+                          type: string
+                          nullable: true
+                          description: Nombre del representante o persona de contacto (puede ser nulo).
+                          example: null
+                        lastName:
+                          type: string
+                          nullable: true
+                          description: Apellido del representante o persona de contacto (puede ser nulo).
+                          example: null
+                        isGhost:
+                          type: boolean
+                          description: Indica si el contratista es fantasma.
+                          example: false
+                        deletedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: Fecha de eliminación lógica del contratista (puede ser nulo).
+                          example: null
+                    deletedAt:
+                      type: string
+                      format: date-time
+                      nullable: true
+                      description: Fecha de eliminación lógica del boletín concursal (puede ser nulo).
+                      example: null
+
+    ContractorTaxSituationUpdateResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema, que indica qué operación se ejecutó en el contratista.
+          example: contractor.updated.taxSituation
+        status:
+          type: string
+          description: Estado de la operación, que puede indicar si fue exitosa o fallida.
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada, que describe el contexto de la acción (por ejemplo, actualización de información adicional).
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad que se vio afectada por la acción. En este caso, el contratista.
+          example: contractor
+        description:
+          type: string
+          description: Descripción breve del propósito de la operación, explicando lo que se actualizó en la situación tributaria.
+          example: Situación tributaria
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora exacta cuando se realizó la operación.
+          example: "2024-12-13T17:44:21.492Z"
+        payload:
+          type: object
+          description: Información adicional relacionada con el contratista, que incluye la situación tributaria.
+          properties:
+            contractor:
+              type: object
+              properties:
+                taxSituation:
+                  type: object
+                  description: Detalles de la situación tributaria del contratista.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del contratista, que identifica al contribuyente.
+                      example: "76.543.210-K"
+                    businessName:
+                      type: string
+                      description: Razón social del contratista o empresa.
+                      example: "Constructora ABC Ltda."
+                    economicActivity:
+                      type: array
+                      description: Actividades económicas en las que el contratista está involucrado.
+                      items:
+                        type: string
+                      example:
+                        - "Construcción"
+                        - "Venta de bienes raíces"
+                    foreignCurrencyTaxAuth:
+                      type: boolean
+                      description: Indica si el contratista tiene autorización para tributar en moneda extranjera.
+                      example: true
+                    isSmallerCompany:
+                      type: boolean
+                      description: Indica si el contratista es una empresa pequeña según las regulaciones fiscales.
+                      example: false
+                    stampingYear:
+                      type: integer
+                      description: Año en el que se realizó el estampado de documentos fiscales.
+                      example: 2024
+                    dateRequestSii:
+                      type: string
+                      format: date
+                      description: Fecha en la que el contratista solicitó su autorización ante el Servicio de Impuestos Internos (SII).
+                      example: "2024-01-15"
+                    stampedDocuments:
+                      type: array
+                      description: Lista de documentos fiscales que fueron estampados por el SII.
+                      items:
+                        type: object
+                        properties:
+                          documentType:
+                            type: string
+                            description: Tipo de documento fiscal estampado.
+                            example: "Factura Electrónica"
+                          stampingYear:
+                            type: integer
+                            description: Año en que el documento fue estampado.
+                            example: 2024
+
+    VehicleUpdateAutofacResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema
+          example: vehicle.update.autofac
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad afectada por la operación
+          example: vehicle
+        description:
+          type: string
+          description: Descripción de la operación
+          example: info-circulation-permission
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-13T17:22:30.502Z
+        payload:
+          type: object
+          properties:
+            vehicle:
+              type: object
+              properties:
+                informe:
+                  type: object
+                  properties:
+                    detallePropietarios:
+                      type: object
+                      properties:
+                        propietarioActual:
+                          type: object
+                          properties:
+                            rut:
+                              type: string
+                              example: 12.345.678-9
+                            nombre:
+                              type: string
+                              example: Juan Pérez
+                            tipoPropietario:
+                              type: string
+                              example: Natural
+                            giroPropietario:
+                              type: string
+                              example: Comerciante
+                            genero:
+                              type: integer
+                              example: 1
+                            numero:
+                              type: integer
+                              example: 1
+                            fechaAdquisicion:
+                              type: string
+                              format: date
+                              example: 2023-05-15
+                            fechaInscripcion:
+                              type: string
+                              format: date
+                              example: 2023-05-20
+                            repertorio:
+                              type: string
+                              example: REP12345
+                            backup:
+                              type: boolean
+                              example: true
+                        propietarioAnterior:
+                          type: object
+                          properties:
+                            rut:
+                              type: string
+                              example: 98.765.432-1
+                            nombre:
+                              type: string
+                              example: María González
+                            tipoPropietario:
+                              type: string
+                              example: Jurídico
+                            giroPropietario:
+                              type: string
+                              example: Constructora
+                            genero:
+                              type: integer
+                              example: 2
+                            numero:
+                              type: integer
+                              example: 2
+                            fechaAdquisicion:
+                              type: string
+                              format: date
+                              example: 2020-10-10
+                            fechaInscripcion:
+                              type: array
+                              items:
+                                type: string
+                                format: date
+                              example: [2020-10-15]
+                            repertorio:
+                              type: string
+                              example: REP54321
+                            backup:
+                              type: boolean
+                              example: false
+                    informacionMecanica:
+                      type: object
+                      properties:
+                        marca:
+                          type: string
+                          example: Toyota
+                        modelo:
+                          type: string
+                          example: Corolla
+                        anno:
+                          type: integer
+                          example: 2022
+                        color:
+                          type: string
+                          example: Azul
+                        tipoVehiculo:
+                          type: string
+                          example: Sedán
+                        paisFabricacion:
+                          type: string
+                          example: Japón
+                    informacionLegal:
+                      type: object
+                      properties:
+                        patente:
+                          type: string
+                          example: XYZ-456
+                        digitoVerificador:
+                          type: string
+                          example: 9
+                        encargoRobo:
+                          type: boolean
+                          example: false
+                        tieneMultasAnotadas:
+                          type: boolean
+                          example: true
+                        seguro:
+                          type: string
+                          example: SOAP 2024
+                        observaciones:
+                          type: string
+                          example: Sin observaciones
+                        subinscripciones:
+                          type: string
+                          example: Ninguna
+                        limitaciones:
+                          type: string
+                          example: Ninguna
+                    infoTag:
+                      type: object
+                      properties:
+                        tieneTag:
+                          type: boolean
+                          example: true
+                        serie:
+                          type: string
+                          example: TAG-12345678
+                        concesionaria:
+                          type: string
+                          example: Concesionaria ABC
+                        fechaInstalacion:
+                          type: string
+                          format: date
+                          example: 2022-06-15
+                    revisionTecnica:
+                      type: object
+                      properties:
+                        revision_tecnica_det:
+                          type: integer
+                          example: 12345
+                        codigoPlantaRevision:
+                          type: string
+                          example: PLT001
+                        idExternoPlantaRevision:
+                          type: string
+                          example: EXT001
+                        nombre:
+                          type: string
+                          example: Planta Revisión Técnica Central
+                        fechaRevision:
+                          type: string
+                          format: date
+                          example: 2023-05-01
+                        fechaVencimientoRevision:
+                          type: string
+                          format: date
+                          example: 2024-05-01
+                        estado_revision:
+                          type: string
+                          example: Aprobada
+                        fechaRevisionText:
+                          type: string
+                          example: 1 de mayo de 2023
+                    propietarios:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          rut:
+                            type: string
+                            example: 12.345.678-9
+                          nombre:
+                            type: string
+                            example: Juan Pérez
+                          tipoPropietario:
+                            type: string
+                            example: Natural
+                          giroPropietario:
+                            type: string
+                            example: Comerciante
+                          genero:
+                            type: integer
+                            example: 1
+                          numero:
+                            type: integer
+                            example: 1
+                          fechaAdquisicion:
+                            type: string
+                            format: date
+                            example: 2023-05-15
+                          fechaInscripcion:
+                            type: string
+                            format: date
+                            example: 2023-05-20
+                          repertorio:
+                            type: string
+                            example: REP12345
+                          backup:
+                            type: boolean
+                            example: true
+                    multas:
+                      type: object
+                      properties:
+                        infraccionesAutopistas:
+                          type: integer
+                          example: 2
+                        infraccionesAnotadas:
+                          type: integer
+                          example: 1
+                        infraccionesDenunciasTag:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              patente:
+                                type: string
+                                example: XYZ-456
+                              fecha:
+                                type: string
+                                format: date
+                                example: 2023-07-10
+                              monto:
+                                type: integer
+                                example: 45000
+                              estado:
+                                type: string
+                                example: Pendiente
+                        infraccionesViasExclusivas:
+                          type: integer
+                          example: 0
+                    permisosCirculacion:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          anno:
+                            type: integer
+                            example: 2024
+                          fechaPago:
+                            type: string
+                            format: date
+                            example: 2024-03-15
+                          monto:
+                            type: integer
+                            example: 150000
+                          estado:
+                            type: string
+                            example: Pagado
+
+    VehicleUpdateTheftResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema
+          example: vehicle.updated.Thef
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad afectada por la operación
+          example: vehicle
+        description:
+          type: string
+          description: Descripción de la operación
+          example: información-encargo-por-robo
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-31T17:07:42.779Z
+        payload:
+          type: object
+          properties:
+            vehicle:
+              type: object
+              properties:
+                chargeForTheft:
+                  type: string
+                  description: Indica si el vehículo tiene cargos por robo
+                  example: La Placa Patente Única consultada N° LKXJ68, NO mantiene encargo policial vigente.
+                patent:
+                  type: string
+                  description: Número de patente del vehículo
+                  example: LKXJ68
+
+    VehicleFinesResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada en el sistema
+          example: vehicle.updated.fines
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación realizada
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad afectada por la operación
+          example: vehicle
+        description:
+          type: string
+          description: Descripción de la operación
+          example: información multas de tráfico
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora de la operación
+          example: 2024-12-13T13:49:16.300Z
+        payload:
+          type: object
+          properties:
+            vehicle:
+              type: object
+              properties:
+                trafficFines:
+                  type: object
+                  properties:
+                    localPoliceCourt:
+                      type: string
+                      description: Tribunal de policía local asociado
+                      example: Municipal Court of Valparaíso
+                    roleCause:
+                      type: string
+                      description: Identificador de la causa judicial
+                      example: Role-2024-VALP-1234
+                    vehicleFines:
+                      type: object
+                      properties:
+                        patent:
+                          type: string
+                          description: Patente del vehículo
+                          example: XYZ-456
+                        trafficFines:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              localPoliceCourt:
+                                type: string
+                                description: Tribunal de policía local asociado
+                                example: Municipal Court of Valparaíso
+                              roleCause:
+                                type: string
+                                description: Identificador de la causa judicial
+                                example: Role-2024-VALP-1235
+                              vehicleFines:
+                                type: object
+                                properties:
+                                  patent:
+                                    type: string
+                                    description: Patente del vehículo
+                                    example: XYZ-456
+                                  trafficFines:
+                                    type: array
+                                    items:
+                                      type: object
+                                      description: Multas de tráfico adicionales
+                                    example: []
+                                  trafficFinesOld:
+                                    type: array
+                                    items:
+                                      type: object
+                                      description: Multas de tráfico antiguas
+                                    example: []
+                                  flagMoreRecords:
+                                    type: boolean
+                                    description: Indicador de más registros disponibles
+                                    example: false
+                        trafficFinesOld:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              localPoliceCourt:
+                                type: string
+                                description: Tribunal de policía local asociado
+                                example: Municipal Court of Santiago
+                              roleCause:
+                                type: string
+                                description: Identificador de la causa judicial
+                                example: Role-2023-STGO-789
+                              vehicleFines:
+                                type: object
+                                properties:
+                                  patent:
+                                    type: string
+                                    description: Patente del vehículo
+                                    example: ABC-123
+                                  trafficFines:
+                                    type: array
+                                    items:
+                                      type: object
+                                      description: Multas de tráfico adicionales
+                                    example: []
+                                  trafficFinesOld:
+                                    type: array
+                                    items:
+                                      type: object
+                                      description: Multas de tráfico antiguas
+                                    example: []
+                                  flagMoreRecords:
+                                    type: boolean
+                                    description: Indicador de más registros disponibles
+                                    example: false
+                        flagMoreRecords:
+                          type: boolean
+                          description: Indicador de más registros disponibles
+                          example: false
+
+    VehicleUpdatedSoapResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: vehicle.updated.soap
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: vehicle
+        description:
+          type: string
+          description: Descripción del evento
+          example: información de soap
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-13T12:27:01.801Z
+        payload:
+          type: object
+          properties:
+            vehicle:
+              type: object
+              properties:
+                registrationRVM:
+                  type: string
+                  description: Registro de RVM del vehículo
+                  example: RVM-12345678
+                vehicleType:
+                  type: string
+                  description: Tipo de vehículo
+                  example: SUV
+                patent:
+                  type: string
+                  description: Patente del vehículo
+                  example: ABCD-123
+                brand:
+                  type: string
+                  description: Marca del vehículo
+                  example: Toyota
+                model:
+                  type: string
+                  description: Modelo del vehículo
+                  example: RAV4
+                year:
+                  type: integer
+                  description: Año de fabricación del vehículo
+                  example: 2022
+                engineNumber:
+                  type: string
+                  description: Número del motor del vehículo
+                  example: ENG987654321
+                company:
+                  type: string
+                  description: Compañía aseguradora
+                  example: Seguros La Protegida
+                owner:
+                  type: string
+                  description: Propietario del vehículo
+                  example: Juan Pérez
+                rut:
+                  type: string
+                  description: RUT del propietario
+                  example: 12.345.678-9
+                prima:
+                  type: number
+                  description: Prima del seguro
+                  example: 50000
+                validFrom:
+                  type: string
+                  format: date
+                  description: Fecha de inicio de vigencia del seguro
+                  example: 2024-01-01
+                validTo:
+                  type: string
+                  format: date
+                  description: Fecha de término de vigencia del seguro
+                  example: 2024-12-31
+
+    contractorUpdatedFinesResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: contractor.updated.fines
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: contractor
+        description:
+          type: string
+          description: Descripción del evento
+          example: información-multas-personal
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-13T02:52:39.374Z
+        payload:
+          type: object
+          properties:
+            contractor:
+              type: object
+              properties:
+                fines:
+                  type: array
+                  description: Lista de multas asociadas al personal
+                  items:
+                    type: object
+                    properties:
+                      consultationDate:
+                        type: string
+                        format: date
+                        description: Fecha de consulta de la multa
+                        example: 2024-12-01
+                      origin:
+                        type: string
+                        description: Origen o entidad que emitió la multa
+                        example: Municipality of Santiago
+                      fine:
+                        type: string
+                        description: Descripción de la multa
+                        example: Parking Violation
+                      statusFines:
+                        type: string
+                        description: Estado actual de la multa
+                        example: Pending Payment
+                      executionDate:
+                        type: string
+                        format: date
+                        description: Fecha de ejecución de la multa
+                        example: 2024-12-15
+                      nUmFinal:
+                        type: number
+                        description: Monto final de la multa
+                        example: 150000
+                      umType:
+                        type: string
+                        description: Tipo de moneda en la que se emitió la multa
+                        example: CLP
+                      statement:
+                        type: string
+                        description: Declaración o detalle adicional sobre la multa
+                        example: Fine issued for illegal parking in a no-parking zone.
+                      finesContractor:
+                        type: object
+                        description: Información sobre multas asociadas al contratista
+                        properties:
+                          rut:
+                            type: string
+                            description: RUT del contratista
+                            example: ""
+                          businessName:
+                            type: string
+                            description: Nombre del negocio del contratista
+                            example: ""
+                          flagMoreRecords:
+                            type: boolean
+                            description: Indicador de si se encontraron más registros
+                            example: false
+                          finesFound:
+                            type: number
+                            description: Número de multas encontradas
+                            example: 0
+                          fines:
+                            type: array
+                            description: Lista de multas asociadas al contratista
+                            items:
+                              type: object
+                rut:
+                  type: string
+                  description: RUT del contratista
+                  example: "12345678-9"
+
+    # DriverLifeSheet:
+    #   type: object
+    #   properties:
+    #     action:
+    #       type: string
+    #       description: Acción realizada
+    #       example: staff.updated.drive.life.sheet
+    #     status:
+    #       type: string
+    #       description: Estado de la operación
+    #       example: success
+    #     operationType:
+    #       type: string
+    #       description: Tipo de operación
+    #       example: additional-info
+    #     entity:
+    #       type: string
+    #       description: Entidad sobre la que se realizó la operación
+    #       example: staff
+    #     description:
+    #       type: string
+    #       description: Descripción del evento
+    #       example: información hoja de vida del conductor
+    #     timestamp:
+    #       type: string
+    #       format: date-time
+    #       description: Marca temporal del evento en formato ISO 8601
+    #       example: 2024-12-13T02:35:09.170Z
+    #     payload:
+    #       type: object
+    #       properties:
+    #         staff:
+    #           type: object
+    #           properties:
+    #             name:
+    #               type: string
+    #               description: Nombre del personal asociado
+    #               example: Carlos
+    #             lastName:
+    #               type: string
+    #               description: Apellido del personal asociado
+    #               example: González
+    #             rut:
+    #               type: string
+    #               description: RUT del personal asociado
+    #               example: 12.345.678-9
+    #             folioNumber:
+    #               type: string
+    #               description: Número de folio asociado
+    #               example: FOL-2024-5678
+    #             verificationCode:
+    #               type: string
+    #               description: Código de verificación asociado al conductor
+    #               example: ABC123
+    #             isValid:
+    #               type: boolean
+    #               description: Indicador de si el registro es válido
+    #               example: true
+    #             hasRecord:
+    #               type: boolean
+    #               description: Indicador de si el conductor tiene un historial registrado
+    #               example: false
+
+    DriverLifeSheet:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.updated.drive.life.sheet
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: información hoja de vida del conductor
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-13T02:35:09.170Z
+        payload:
+          type: object
+          properties:
+            staff:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Nombre completo del personal asociado
+                  example: FRANCISCO JESÚS LOPEZ GARCÍA
+                lastName:
+                  type: string
+                  description: Apellido del personal asociado (puede ser igual al nombre completo)
+                  example: FRANCISCO JESÚS LOPEZ GARCÍA
+                rut:
+                  type: string
+                  description: RUT del personal asociado
+                  example: 12345678-4
+                folioNumber:
+                  type: string
+                  description: Número de folio asociado
+                  example: 500649780844
+                verificationCode:
+                  type: string
+                  description: Código de verificación asociado al conductor
+                  example: dccdcd338e95
+                isValid:
+                  type: boolean
+                  description: Indicador de si el registro es válido
+                  example: true
+                hasRecord:
+                  type: boolean
+                  description: Indicador de si el conductor tiene un historial registrado
+                  example: true
+                deletedAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Fecha de eliminación lógica del registro (puede ser nulo)
+                  example: null
+                birthDate:
+                  type: string
+                  description: Fecha de nacimiento del conductor (formato libre)
+                  example: 4 Febrero 1993
+                commune:
+                  type: string
+                  description: Comuna de residencia del conductor
+                  example: LAS CONDES
+                driverHistory:
+                  type: object
+                  description: Historial del conductor
+                  properties:
+                    run:
+                      type: string
+                      description: RUN del conductor
+                      example: 18392709-4
+                    records:
+                      type: string
+                      description: Resumen de antecedentes del conductor
+                      example: SIN ANTECEDENTES PRN
+                isReadable:
+                  type: boolean
+                  description: Indica si la información es legible
+                  example: true
+                issueDate:
+                  type: string
+                  description: Fecha de emisión del documento (formato libre)
+                  example: 14 Agosto 2025, 10:24.
+                registeredLicenses:
+                  type: array
+                  description: Licencias registradas del conductor
+                  items:
+                    type: object
+                    properties:
+                      license_class:
+                        type: string
+                        description: Clase de licencia
+                        example: B
+                      issue_date:
+                        type: string
+                        description: Fecha de emisión de la licencia
+                        example: 26/01/2017
+                      municipality:
+                        type: string
+                        description: Municipalidad emisora
+                        example: LAS CONDES
+
+    StaffUpdatedCivilCriminalTrialsResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.updated.civil.criminal.trials
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: info-juicios-civiles-penales
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-13T02:18:36.921Z
+        payload:
+          type: object
+          properties:
+            staff o contractor-staff:
+              type: object
+              description: Propiedad que indica si se trata de un personal o de un contratista.
+              properties:
+                rut:
+                  type: string
+                  description: RUT del personal sin punto y con digito verificador.
+                  example: 22222222-2
+                isInformationUpdated:
+                  type: boolean or null
+                  description: |
+                    Indica si la información consultada corresponde a la versión validada más reciente según los procesos de verificación de Testia.
+
+                    - true → La información está actualizada y corresponde a la última validación disponible.
+                    - false → La información está disponible, pero aún no corresponde a la versión validada más reciente (ejemplo: primera carga de ciertos antecedentes).
+                    - null → No existe referencia de última actualización para la información consultada.
+
+                    Notas:
+                    El significado de “actualizada” puede variar según la fuente o tipo de información, pero siempre refleja si se cuenta con la versión más reciente validada dentro de la plataforma.
+                  example: true
+                caseDetails:
+                  type: object
+                  properties:
+                    # supremeCourt:
+                    #   type: object
+                    #   properties:
+                    #     cases:
+                    #       type: array
+                    #       items:
+                    #         $ref: "#/components/schemas/CourtCase"
+                    # appealsCourt:
+                    #   type: object
+                    #   properties:
+                    #     cases:
+                    #       type: array
+                    #       items:
+                    #         $ref: "#/components/schemas/CourtCase"
+                    civil:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CivilCase"
+                    labor:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/LaborCase"
+                    criminal:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CriminalCase"
+                    collection:
+                      type: object
+                      properties:
+                        cases:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CollectionCase"
+
+    CourtCase:
+      type: object
+      properties:
+        rol:
+          type: string
+          description: Identificador único del caso
+          example: 123-2024
+        rit:
+          type: string
+          description: Código del registro de ingreso del caso
+          example: CIV-001
+        ruc:
+          type: string
+          description: Registro único de causa
+          example: RUC12345678
+        labeled:
+          type: string
+          description: Etiqueta del caso
+          example: Lawsuit vs ABC Corp
+        admissionDate:
+          type: string
+          format: date
+          description: Fecha de ingreso del caso
+          example: 2024-01-15
+        courtOrTribunal:
+          type: string
+          description: Tribunal o corte que lleva el caso
+          example: Supreme Court
+        status:
+          type: string
+          description: Estado actual del caso
+          example: Pending
+        subject:
+          type: string
+          description: Materia del caso
+          example: Contract Dispute
+        resourceType:
+          type: string
+          description: Tipo de recurso
+          example: Civil
+        rut:
+          type: string
+          description: RUT asociado al caso
+          example: 12.345.678-9
+        dv:
+          type: string
+          description: Dígito verificador del RUT
+          example: K
+        role:
+          type: string
+          description: Rol de la persona o entidad en el caso
+          example: Plaintiff
+        caseType:
+          type: string
+          description: Tipo de caso
+          example: Appeal
+        titled:
+          type: string
+          description: Título del caso
+          example: ABC Corp vs XYZ Ltd
+        caseStatus:
+          type: string
+          description: Estado detallado del caso
+          example: Under Review
+        court:
+          type: string
+          description: Corte específica asociada al caso
+          example: Supreme Court of Chile
+        crime:
+          type: array
+          description: Lista de crímenes asociados al caso
+          items:
+            type: string
+            example: Breach of Contract
+        locationDate:
+          type: string
+          format: date
+          description: Fecha de localización (si aplica)
+          example: 2024-03-01
+        location:
+          type: string
+          description: Ubicación específica (si aplica)
+          example: Santiago
+
+    CriminalCase:
+      type: object
+      properties:
+        rit:
+          type: string
+          description: Código del registro de ingreso del caso criminal
+        courtOrTribunal:
+          type: string
+          description: Tribunal o corte que lleva el caso criminal
+        ruc:
+          type: string
+          description: Registro único de causa criminal
+        labeled:
+          type: string
+          description: Etiqueta del caso criminal
+        admissionDate:
+          type: string
+          description: Fecha de ingreso del caso criminal
+        caseStatus:
+          type: string
+          description: Estado del caso criminal
+        subject:
+          type: string
+          description: Materia del caso criminal
+      example:
+        rit: "Ordinaria-173-2023"
+        courtOrTribunal: "Tribunal de Juicio Oral en lo Penal de Curico"
+        ruc: ""
+        labeled: "Homicidio."
+        admissionDate: "26/09/2023"
+        caseStatus: "Tramitación"
+        subject: "Testigo"
+
+    CivilCase:
+      type: object
+      properties:
+        rol:
+          type: string
+          description: Identificador único del caso civil
+        admissionDate:
+          type: string
+          format: date-time
+          description: Fecha de ingreso del caso civil
+        court:
+          type: string
+          description: Juzgado civil asociado al caso
+        caseStatus:
+          type: string
+          description: Estado del caso civil
+        subject:
+          type: string
+          description: Materia del caso civil
+      example:
+        rol: "C-12580-2017"
+        admissionDate: "2017-06-06T00:00:00.000Z"
+        court: "8º Juzgado Civil de Santiago"
+        caseStatus: "Archivada Digital"
+        subject: "DDO."
+
+    CollectionCase:
+      type: object
+      properties:
+        rit:
+          type: string
+          description: Código del registro de ingreso del caso de cobranza
+        admissionDate:
+          type: string
+          format: date-time
+          description: Fecha de ingreso del caso de cobranza
+        court:
+          type: string
+          description: Juzgado o tribunal que lleva el caso de cobranza
+        caseStatus:
+          type: string
+          description: Estado del caso de cobranza
+        subject:
+          type: string
+          description: Materia del caso de cobranza
+        amount:
+          type: number
+          nullable: true
+          description: Monto asociado al caso (si aplica)
+      example:
+        rit: "D-242-2018"
+        admissionDate: "2018-02-02T00:00:00.000Z"
+        court: "Jdo. de Letras del Trabajo de Talca"
+        caseStatus: "Concluido"
+        subject: "DDO."
+        amount: null
+
+    LaborCase:
+      type: object
+      properties:
+        rit:
+          type: string
+          description: Código del registro de ingreso del caso
+        admissionDate:
+          type: string
+          format: date-time
+          description: Fecha de ingreso del caso
+        court:
+          type: string
+          description: Juzgado asociado al caso
+        caseStatus:
+          type: string
+          description: Estado del caso
+        subject:
+          type: string
+          description: Asunto del caso
+        caseType:
+          type: string
+          description: Tipo de caso
+      example:
+        rit: "M-26-2021"
+        admissionDate: "2021-10-17T00:00:00.000Z"
+        court: "Juzgado de Letras de Cauquenes"
+        caseStatus: "Cumplimiento"
+        subject: "DDO."
+        caseType: "Monitorio"
+
+    # ContractorUpdatedArrearsResponse:
+    #   type: object
+    #   properties:
+    #     action:
+    #       type: string
+    #       description: Acción realizada
+    #       example: contractor.updated.arrears
+    #     status:
+    #       type: string
+    #       description: Estado de la operación
+    #       example: success
+    #     operationType:
+    #       type: string
+    #       description: Tipo de operación
+    #       example: additional-info
+    #     entity:
+    #       type: string
+    #       description: Entidad sobre la que se realizó la operación
+    #       example: contractor
+    #     description:
+    #       type: string
+    #       description: Descripción del evento
+    #       example: info-arrears
+    #     timestamp:
+    #       type: string
+    #       format: date-time
+    #       description: Marca temporal del evento en formato ISO 8601
+    #       example: 2024-12-13T02:01:20.477Z
+    #     payload:
+    #       type: object
+    #       properties:
+    #         contractor:
+    #           type: object
+    #           properties:
+    #             rut:
+    #               type: string
+    #               description: RUT del contratista
+    #               example: 12.345.678-9
+    #             businessName:
+    #               type: string
+    #               description: Nombre del contratista
+    #               example: Tech Solutions Ltda.
+    #             flagMoreRecords:
+    #               type: boolean
+    #               description: Indicador de si existen más registros
+    #               example: true
+    #             arrears:
+    #               type: array
+    #               description: Lista de deudas asociadas al contratista
+    #               items:
+    #                 type: object
+    #                 properties:
+    #                   affiliateRut:
+    #                     type: string
+    #                     description: RUT del afiliado
+    #                     example: 98.765.432-1
+    #                   affiliateName:
+    #                     type: string
+    #                     description: Nombre del afiliado
+    #                     example: Juan Pérez
+    #                   productType:
+    #                     type: string
+    #                     description: Tipo de producto asociado a la deuda
+    #                     example: Health Insurance
+    #                   afpAfc:
+    #                     type: string
+    #                     description: Administradora de fondos de pensión o seguro
+    #                     example: AFP Provida
+    #                   periodToBeRegulatized:
+    #                     type: string
+    #                     description: Periodo que debe ser regularizado
+    #                     example: 2024-01
+    #                   letterDate:
+    #                     type: string
+    #                     format: date
+    #                     description: Fecha de emisión de la carta
+    #                     example: 2024-02-01
+    #                   demandDate:
+    #                     type: string
+    #                     format: date
+    #                     description: Fecha de la demanda
+    #                     example: 2024-02-15
+    #                   arrearsContractor:
+    #                     type: object
+    #                     description: Detalles de deudas del contratista asociado
+    #                     properties:
+    #                       rut:
+    #                         type: string
+    #                         description: RUT del contratista asociado
+    #                         example: 98.765.432-1
+    #                       businessName:
+    #                         type: string
+    #                         description: Nombre del contratista asociado
+    #                         example: Tech Solutions Ltda.
+    #                       flagMoreRecords:
+    #                         type: boolean
+    #                         description: Indicador de más registros asociados
+    #                         example: false
+    #                       arrears:
+    #                         type: array
+    #                         description: Lista de deudas adicionales asociadas
+    #                         items: {}
+
+    ContractorUpdatedArrearsResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: contractor.updated.arrears
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: contractor
+        description:
+          type: string
+          description: Descripción del evento
+          example: info-arrears
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-13T02:01:20.477Z
+        payload:
+          type: object
+          properties:
+            contractor:
+              type: object
+              properties:
+                rut:
+                  type: string
+                  description: RUT del contratista
+                  example: 12345678-9
+                businessName:
+                  type: string
+                  description: Nombre del contratista
+                  example: Tech Solutions Ltda.
+                flagMoreRecords:
+                  type: boolean
+                  description: Indicador de si existen más registros
+                  example: true
+                arrears:
+                  type: array
+                  description: Lista de deudas asociadas al contratista
+                  items:
+                    type: object
+                    properties:
+                      affiliateRut:
+                        type: string
+                        description: RUT del afiliado
+                        example: 98765432-1
+                      affiliateName:
+                        type: string
+                        description: Nombre del afiliado
+                        example: Juan Pérez
+                      productType:
+                        type: string
+                        description: Tipo de producto asociado a la deuda
+                        example: Cotización obligatorias
+                      afpAfc:
+                        type: string
+                        description: Administradora de fondos de pensión o seguro
+                        example: AFP Provida
+                      periodToBeRegulatized:
+                        type: string
+                        description: Periodo que debe ser regularizado
+                        example: 2024-01
+                      letterDate:
+                        type: string
+                        format: date-time
+                        description: Fecha de emisión de la carta (puede ser null o fecha ISO 8601)
+                        example: 2022-07-30T00:00:00.000Z
+                        nullable: true
+                      demandDate:
+                        type: string
+                        description: Fecha o estado de la demanda (puede ser texto o fecha)
+                        example: Prejudicial
+                      deletedAt:
+                        type: string
+                        format: date-time
+                        description: Fecha de eliminación lógica de la deuda (puede ser nulo)
+                        example: null
+                        nullable: true
+                deletedAt:
+                  type: string
+                  format: date-time
+                  description: Fecha de eliminación lógica del contratista (puede ser nulo)
+                  example: null
+                  nullable: true
+
+    StaffUpdatedAntecedenteResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.updated.antecedente
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: info-antecedente-sheet
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-12T22:29:47.943Z
+        payload:
+          type: object
+          properties:
+            staff:
+              type: object
+              properties:
+                msn:
+                  type: string
+                  description: Mensaje relacionado con la actualización
+                  example: Te informamos que el certificado de antecedentes con folio 229 perteneciente a (nombre) (apellido) con RUT (27199128-2) ha sido marcado como Válido. Te recomendamos que revises la información para asegurarte de que todo esté en orden. Atentamente, Equipo de Testia
+                rut:
+                  type: string
+                  description: RUT del personal asociado
+                  example: 27.199.128-2
+
+    DocumentAlertResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: document.alert
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: additional-info
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: vehicle
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-12T21:50:32.053Z
+        payload:
+          type: object
+          properties:
+            reason:
+              type: string
+              description: Razón del estado o acción
+              example: No se encontró el rut
+            side:
+              type: string
+              nullable: true
+              description: Lado asociado, puede ser nulo
+              example: null
+            rut:
+              type: string
+              nullable: true
+              description: RUT o identificador, puede ser nulo
+              example: null
+            parent:
+              type: string
+              description: Identificador de la patente
+              example: LKXJ65
+            document:
+              type: string
+              description: Identificador del documento
+              example: Permiso de circulacion
+            documentType:
+              type: integer
+              description: Tipo de documento asociado
+              example: 24
+            status:
+              type: string
+              description: Estado del documento
+              example: Rechazado
+            expirationDate:
+              type: string
+              description: Fecha de vencimiento del documento
+              example: 2024-12-12
+
+    SuccessContractorupdate:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: contractor.updated
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: update
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: contractor
+        description:
+          type: string
+          description: Descripción del evento
+          example: se actualizó contratista de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          allOf:
+            - $ref: "#/components/schemas/ContractorUpdate"
+
+    SuccessContractorCreate:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: contractor.create
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: create
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: contractor
+        description:
+          type: string
+          description: Descripción del evento
+          example: se creo contratista de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          allOf:
+            - $ref: "#/components/schemas/ContractorResponse"
+
+    UpdateVehicle:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensjae de actualización
+        documents:
+          type: array
+          description: Lista de documentos asociados al vehículo
+          items:
+            type: object
+            properties:
+              document:
+                type: string
+                description: Nombre del documento
+                example: Permiso de Circulación
+              documentType:
+                type: integer
+                description: ID del tipo de documento
+                example: 27
+              status:
+                type: string
+                description: Estado del documento
+                example: Pendiente de subir
+              color:
+                type: string
+                description: Color asociado al estado del documento
+                example: Rojo
+              reason:
+                type: string
+                nullable: true
+                description: Razón asociada al estado del documento (si aplica)
+                example: null
+              parent:
+                type: string
+                nullable: true
+                description: Referencia al documento principal (si aplica)
+                example: 547DJK
+
+    SuccessCreateStaffEventDTO:
+      type: object
+      properties:
+        action:
+          type: string
+          description: |
+            Acción realizada
+            - contractor.create
+            - contractor.updated
+            - vehicle.create
+            - vehicle.updated
+            - staff.create
+            - staff.updated
+          example: staff.create
+        status:
+          type: string
+          description: |
+            Estado de la operación
+            - success
+            - error
+            - warning
+
+          example: success
+        operationType:
+          type: string
+          description: |
+            Tipo de operación
+            - create
+            - update
+            - delete
+            - additional-info
+          example: create
+        entity:
+          type: string
+          description: |
+            Entidad sobre la que se realizó la operación
+            - vehicle
+            - contractor
+            - staff
+            - coupled
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: se creo personal de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          type: object
+          properties:
+            personal:
+              type: object
+              description: Información del personal creado
+              properties:
+                name:
+                  type: string
+                  description: Nombre del personal
+                  example: rodwin2
+                lastName:
+                  type: string
+                  description: Apellido del personal
+                  example: primera
+                rut:
+                  type: string
+                  description: RUT del personal
+                  example: 88881440-k
+            documents:
+              type: array
+              description: Lista de documentos asociados al personal
+              items:
+                type: object
+                properties:
+                  side:
+                    type: string
+                    nullable: true
+                    description: Lado del documento (frontal o trasera)
+                    example: frontal
+                  rut:
+                    type: string
+                    description: RUT del personal asociado al documento
+                    example: 88881440-k
+                  document:
+                    type: string
+                    description: Nombre del documento
+                    example: Cédula de identidad
+                  documentType:
+                    type: integer
+                    description: ID del tipo de documento
+                    example: 30
+                  status:
+                    type: string
+                    description: Estado del documento
+                    example: Pendiente de subir
+                  color:
+                    type: string
+                    description: Color asociado al estado del documento
+                    example: Rojo
+                  reason:
+                    type: string
+                    nullable: true
+                    description: Razón asociada al estado del documento (si aplica)
+                    example: null
+                  parent:
+                    type: string
+                    nullable: true
+                    description: Referencia al documento principal (si aplica)
+                    example: null
+
+    SuccessStaffCreate:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.create
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: create
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: se creo personal de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          allOf:
+            - $ref: "#/components/schemas/createStaffDto"
+
+    createStaffDto:
+      type: object
+      properties:
+        personal:
+          type: object
+          description: Información del personal creado
+          properties:
+            name:
+              type: string
+              description: Nombre del personal
+              example: rodwin2
+            lastName:
+              type: string
+              description: Apellido del personal
+              example: primera
+            rut:
+              type: string
+              description: RUT del personal
+              example: 88881440-k
+        documents:
+          type: array
+          description: Lista de documentos asociados al personal
+          items:
+            type: object
+            properties:
+              side:
+                type: string
+                nullable: true
+                description: Lado del documento (frontal o trasera)
+                example: frontal
+              rut:
+                type: string
+                description: RUT del personal asociado al documento
+                example: 88881440-k
+              document:
+                type: string
+                description: Nombre del documento
+                example: Cédula de identidad
+              documentType:
+                type: integer
+                description: ID del tipo de documento
+                example: 30
+              status:
+                type: string
+                description: Estado del documento
+                example: Pendiente de subir
+              color:
+                type: string
+                description: Color asociado al estado del documento
+                example: Rojo
+              reason:
+                type: string
+                nullable: true
+                description: Razón asociada al estado del documento (si aplica)
+                example: null
+              parent:
+                type: string
+                nullable: true
+                description: Referencia al documento principal (si aplica)
+                example: null
+
+    SuccessStaffUpdate:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: staff.updated
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: updated
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: staff
+        description:
+          type: string
+          description: Descripción del evento
+          example: Se actualizo personal de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          allOf:
+            - $ref: "#/components/schemas/createUpdateStaff"
+
+    createUpdateStaff:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensjae de actualización
+        documents:
+          type: array
+          description: Lista de documentos asociados al personal
+          items:
+            type: object
+            properties:
+              side:
+                type: string
+                nullable: true
+                description: Lado del documento (frontal o trasera)
+                example: frontal
+              rut:
+                type: string
+                description: RUT del personal asociado al documento
+                example: 88881440-k
+              document:
+                type: string
+                description: Nombre del documento
+                example: Cédula de identidad
+              documentType:
+                type: integer
+                description: ID del tipo de documento
+                example: 30
+              status:
+                type: string
+                description: Estado del documento
+                example: Pendiente de subir
+              color:
+                type: string
+                description: Color asociado al estado del documento
+                example: Rojo
+              reason:
+                type: string
+                nullable: true
+                description: Razón asociada al estado del documento (si aplica)
+                example: null
+              parent:
+                type: string
+                nullable: true
+                description: Referencia al documento principal (si aplica)
+                example: null
+
+    SuccessVehicleCreate:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: vehicle.create
+        status:
+          type: string
+          description: Estado de la operación
+          example: success
+        operationType:
+          type: string
+          description: Tipo de operación
+          example: create
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: vehicle
+        description:
+          type: string
+          description: Descripción del evento
+          example: se creo personal de forma exitosa
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2024-12-02T16:44:14.215Z
+        payload:
+          allOf:
+            - $ref: "#/components/schemas/VehicleDTO"
+
+    VehicleDTO:
+      type: object
+      properties:
+        patent:
+          type: string
+          description: Patente del vehículo
+        brand:
+          type: string
+          nullable: true
+          description: Marca del vehículo
+        model:
+          type: string
+          nullable: true
+          description: Modelo del vehículo
+        vehicle_year:
+          type: string
+          nullable: true
+          description: Año del vehículo
+        vehicle_color:
+          type: string
+          nullable: true
+          description: Color del vehículo
+        engine_number:
+          type: string
+          nullable: true
+          description: Número de motor del vehículo
+        chassis_number:
+          type: string
+          nullable: true
+          description: Número de chasis del vehículo
+        vin_number:
+          type: string
+          nullable: true
+          description: Número VIN del vehículo
+        fuel:
+          type: string
+          nullable: true
+          description: Tipo de combustible del vehículo
+        pvb:
+          type: string
+          nullable: true
+          description: Peso bruto vehicular
+        vehicle_type:
+          type: string
+          nullable: true
+          description: Tipo de vehículo
+        owner_name:
+          type: string
+          nullable: true
+          description: Nombre del propietario
+        owner_rut:
+          type: string
+          nullable: true
+          description: RUT del propietario
+        owner_acquisition_date:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha de adquisición del vehículo por el propietario
+        owner_repertoire:
+          type: string
+          nullable: true
+          description: Repertorio del propietario
+        owner_number:
+          type: string
+          nullable: true
+          description: Número del propietario
+        owner_date:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha asociada al propietario
+        domain_limitations:
+          type: string
+          nullable: true
+          description: Limitaciones de dominio del vehículo
+
+    ContractorResponse:
+      type: object
+      properties:
+        contractor:
+          $ref: "#/components/schemas/Contractor"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Document"
+
+    Contractor:
+      type: object
+      properties:
+        companyContractor:
+          $ref: "#/components/schemas/CompanyContractor"
+
+    CompanyContractor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        startReview:
+          type: string
+          format: date-time
+        endReview:
+          type: string
+          format: date-time
+        contractor:
+          $ref: "#/components/schemas/ContractorDetails"
+        serviceType:
+          $ref: "#/components/schemas/ServiceType"
+        companyPartner:
+          type: string
+          format: uuid
+        reviewCompanies:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewCompany"
+        company:
+          type: string
+          format: uuid
+        fullNameUser:
+          type: string
+          nullable: true
+        additionalFields:
+          type: object
+          nullable: true
+        additionalDocuments:
+          type: object
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+
+    ContractorDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rut:
+          type: string
+        businessName:
+          type: string
+        name:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        contractorType:
+          $ref: "#/components/schemas/ContractorType"
+        companyPartner:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompanyPartner"
+
+    ContractorType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CompanyPartner:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rut:
+          type: string
+        name:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        userId:
+          type: string
+          nullable: true
+        contractor:
+          type: string
+          nullable: true
+
+    ServiceType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name_service_type:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReviewCompany:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rut:
+          type: string
+        businessName:
+          type: string
+        domainId:
+          type: integer
+        phoneNumber:
+          type: string
+        isActive:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        fullNameUser:
+          type: string
+          nullable: true
+
+    Document:
+      type: object
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+        fileKey:
+          type: string
+          nullable: true
+        companyContractorId:
+          type: string
+          format: uuid
+        documentType:
+          type: integer
+        documentEntity:
+          type: integer
+        rut:
+          type: string
+        status:
+          $ref: "#/components/schemas/Status"
+        colors:
+          $ref: "#/components/schemas/Color"
+        s3Path:
+          type: string
+          format: uri
+          nullable: true
+        s3Region:
+          type: string
+          nullable: true
+        patent:
+          type: string
+          nullable: true
+        side:
+          type: string
+          nullable: true
+        demand:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+        expiringNotificationsCount:
+          type: integer
+        expiredNotificationsCount:
+          type: integer
+        id:
+          type: string
+          format: uuid
+        uploadDate:
+          type: string
+          format: date-time
+        documentTypeRequestId:
+          type: array
+          items:
+            type: string
+
+    Status:
+      type: object
+      properties:
+        id:
+          type: integer
+        statusName:
+          type: string
+        priority:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Color:
+      type: object
+      properties:
+        id:
+          type: integer
+        colorName:
+          type: string
+        priority:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ContractorUpdate:
+      type: object
+      properties:
+        contractor:
+          type: object
+          properties:
+            reviewStartDate:
+              type: string
+              format: date-time
+              description: Fecha de inicio de la revisión en formato ISO 8601.
+            reviewEndDate:
+              type: string
+              format: date-time
+              description: Fecha de finalización de la revisión en formato ISO 8601.
+            reviewCompaniesId:
+              type: array
+              items:
+                type: string
+                format: uuid
+                description: ID de las empresas en formato UUID.
+              description: Lista de identificadores de empresas asociadas al contratista.
+
+        documents:
+          type: array
+          description: Lista de documentos asociados al vehículo
+          items:
+            type: object
+            properties:
+              document:
+                type: string
+                description: Nombre del documento
+                example: Permiso de Circulación
+              documentType:
+                type: integer
+                description: ID del tipo de documento
+                example: 27
+              status:
+                type: string
+                description: Estado del documento
+                example: Pendiente de subir
+              color:
+                type: string
+                description: Color asociado al estado del documento
+                example: Rojo
+              reason:
+                type: string
+                nullable: true
+                description: Razón asociada al estado del documento (si aplica)
+                example: null
+              parent:
+                type: string
+                nullable: true
+                description: Referencia al documento principal (si aplica)
+                example: 547DJK
+
+    IAVerificationResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Acción realizada
+          example: update
+        status:
+          type: string
+          description: Estado de la operación
+          example: error
+        entity:
+          type: string
+          description: Entidad sobre la que se realizó la operación
+          example: contractor
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca temporal del evento en formato ISO 8601
+          example: 2025-07-17T19:58:00.303Z
+        payload:
+          type: object
+          properties:
+            error:
+              type: object
+              description: Detalles del error generado por la IA
+              properties:
+                title:
+                  type: string
+                  description: Título del error
+                  example: error
+                id:
+                  type: string
+                  description: Identificador del documento (Patente o RUT según el caso)
+                  example: 20868683-6
+                documentType:
+                  type: integer
+                  description: ID del tipo de documento
+                  example: 30
+                message:
+                  type: object
+                  description: Detalles del mensaje de error
+                  properties:
+                    message:
+                      type: string
+                      description: Descripción del error
+                      example: El archivo 124453.jpg no es legible
+                    error:
+                      type: integer
+                      description: Código del error
+                      example: 30
+                    statusCode:
+                      type: integer
+                      description: Código de estado HTTP asociado al error
+                      example: 400
