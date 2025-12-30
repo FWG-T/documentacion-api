@@ -1,0 +1,539 @@
+openapi: 3.0.0
+info:
+  title: Grupos y Etiquetas
+  description: Gestión de consulta, asignación y desasignación de grupos y etiquetas de contratistas asociadas una entidad.
+  # description: |
+  #   Descargar colección de Postman: <a class="sc-gmgFlS gDfmoL" target="_blank" href="https://testia-public-objects.s3.us-east-1.amazonaws.com/postman/API+Testia+-+Consultar+Entidad.postman_collection.json.zip">Download</a><br><br>
+  #   Microservicio encargado de las consultas sobre contratistas, vehiculos y personal y sus documentos.
+  version: "1.0.1"
+
+servers:
+  - url: https://{urlbase}
+
+tags:
+  - name: Consultas de contratistas asociados a una entidad
+    description: Endpoints relacionados con la consulta y listado de los contratistas asociados por RUT a un vehículo o personal.
+
+  - name: Asociar contratistas a una entidad
+    description: Endpoints para asociar contratistas por su RUT a un vehículo o personal.
+
+  - name: Desasociar contratistas a una entidad
+    description: Endpoints para desaasociar contratistas por su RUT a un vehículo o personal.
+
+paths:
+  /groups/vehicle/:vehiclePlate/contractors:
+    get:
+      operationId: getContractorByVehicle
+      summary: Obtener contratistas asociados a un vehículo
+      description: Obtiene listado de los contratistas (nombre y RUT) asociados a un vehículo
+      parameters:
+        - name: Apikey
+          in: header
+          required: true
+          description: Clave APIKEY requerida en los headers para autenticar las solicitudes
+          schema:
+            $ref: "#/components/schemas/APIKEY"
+            # type: string
+        - name: vehiclePlate
+          in: path
+          required: true
+          description: Patente del vehículo
+          example: ABCD12
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorList"
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Respuesta de error para solicitudes incorrectas
+                properties:
+                  message:
+                    type: array of string
+                    description: Mensaje de error
+                    example: ["Formato de patente inválido"]
+                  error:
+                    type: string
+                    description: Código de error
+                    example: "Bad Request"
+                  statusCode:
+                    type: number
+                    description: Código de estado HTTP
+                    example: 400
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas de contratistas asociados a una entidad
+      security:
+        # - APIKEY: []
+
+  /groups/staff/:rut/contractors:
+    get:
+      operationId: getContractorByStaff
+      summary: Obtener contratistas asociados a un personal
+      description: Obtiene listado de los contratistas (nombre y RUT) asociados a un personal
+      parameters:
+        - name: Apikey
+          in: header
+          required: true
+          description: Clave APIKEY requerida en los headers para autenticar las solicitudes
+          schema:
+            $ref: "#/components/schemas/APIKEY"
+            # type: string
+        - name: rut
+          in: path
+          required: true
+          description: RUT del personal
+          example: "12345678-9"
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorList"
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Respuesta de error para solicitudes incorrectas
+                properties:
+                  message:
+                    type: array of string
+                    description: Mensaje de error
+                    example: ["Formato de RUT inválido"]
+                  error:
+                    type: string
+                    description: Código de error
+                    example: "Bad Request"
+                  statusCode:
+                    type: number
+                    description: Código de estado HTTP
+                    example: 400
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno del servidor
+      tags:
+        - Consultas de contratistas asociados a una entidad
+      security:
+        # - APIKEY: []
+
+  /groups/vehicle/assign:
+    post:
+      operationId: assignContractorToVehicle
+      summary: Asignar contratistas a un vehículo
+      description: Asigna contratista por RUT a un vehículo por su patente.
+      tags:
+        - Asociar contratistas a una entidad
+      parameters:
+        - name: Apikey
+          in: header
+          required: true
+          description: Clave APIKEY requerida en los headers para autenticar las solicitudes
+          schema:
+            $ref: "#/components/schemas/APIKEY"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignContractorToVehicleRequest"
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentVehicleResponse"
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Vehículo ya pertenece al grupo del contratista que se desea asignar"
+                  - $ref: "#/components/schemas/RUT del cotratista invalido"
+        "404":
+          description: Contratista no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorNotFoundResponse"
+
+  /groups/staff/assign:
+    post:
+      operationId: assignContractorToStaff
+      summary: Asignar contratistas a un personal
+      description: Asigna contratistas por RUT a un personal por su RUT.
+      tags:
+        - Asociar contratistas a una entidad
+      parameters:
+        - name: Apikey
+          in: header
+          required: true
+          description: Clave APIKEY requerida en los headers para autenticar las solicitudes
+          schema:
+            $ref: "#/components/schemas/APIKEY"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignContractorToStaffRequest"
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentStaffResponse"
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Personal ya pertenece al grupo del contratista que se desea asignar"
+                  - $ref: "#/components/schemas/RUT del cotratista invalido"
+        "404":
+          description: Contratista no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorNotFoundResponse"
+
+  /groups/vehicle/unassign:
+    post:
+      operationId: unassignContractorToVehicle
+      summary: Desasignar contratistas a un vehículo
+      description: Desasignar contratista por RUT a un vehículo por su patente.
+      tags:
+        - Desasociar contratistas a una entidad
+      parameters:
+        - name: Apikey
+          in: header
+          required: true
+          description: Clave APIKEY requerida en los headers para autenticar las solicitudes
+          schema:
+            $ref: "#/components/schemas/APIKEY"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignContractorToVehicleRequest"
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnassignmentVehicleResponse"
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Vehículo no pertenece al grupo del contratista que se desea desasignar"
+                  - $ref: "#/components/schemas/RUT del cotratista invalido"
+        "404":
+          description: Contratista no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorNotFoundResponse"
+
+  /groups/staff/unassign:
+    post:
+      operationId: unassignContractorToStaff
+      summary: Desasignar contratistas a un personal
+      description: Desasignar contratista por RUT a un personal por su RUT.
+      tags:
+        - Desasociar contratistas a una entidad
+      parameters:
+        - name: Apikey
+          in: header
+          required: true
+          description: Clave APIKEY requerida en los headers para autenticar las solicitudes
+          schema:
+            $ref: "#/components/schemas/APIKEY"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignContractorToStaffRequest"
+      responses:
+        "201":
+          description: Datos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnassignmentStaffResponse"
+        "400":
+          description: Solicitud incorrecta
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Respuesta de error para solicitudes incorrectas
+                properties:
+                  message:
+                    type: string
+                    description: Mensaje de error
+                    example: "El personal no pertenece al grupo del contratista que se desea desasignar"
+                  error:
+                    type: string
+                    description: Código de error
+                    example: "Bad Request"
+                  statusCode:
+                    type: number
+                    description: Código de estado HTTP
+                    example: 400
+        "404":
+          description: Contratista no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorNotFoundResponse"
+
+components:
+  securitySchemes:
+    APIKEY:
+      required: true
+      type: apikey
+      name: Apikey
+      in: header
+      description: Clave APIKEY es requerida en los headers para autenticar las solicitudes.
+
+  schemas:
+    State:
+      description: Estado actual de la entidad o documento
+      type: object
+      properties:
+        id:
+          type: number
+          description: |
+            ID del estado:
+            - 1: Válido
+            - 2: Pendiente de subir
+            - 3: Solicitud completada
+            - 4: Solicitud Pendiente
+            - 5: Documento cargado
+            - 6: Sin información
+            - 7: No vigente
+            - 8: Por vencer
+            - 9: Inválido
+            - 10: Solicitud fuera de plazo
+            - 11: Pendiente de validar
+            - 12: Error de lectura
+            - 13: Rechazado
+            - 14: Actividad económica no existe
+            - 15: Patente no existe
+            - 16: Sin actividades económicas
+            - 17: Presenta juicios
+            - 18: Presenta juicios penales
+          example: 2
+
+    ContractorList:
+      type: array
+      description: Lista de contratistas con RUT y nombre
+      items:
+        type: object
+        properties:
+          rut:
+            type: string
+            description: RUT del contratista
+            example: "76192268-8"
+          name:
+            type: string
+            description: Nombre del contratista
+            example: "orbis data spa"
+
+    AssignmentVehicleResponse:
+      type: object
+      description: Respuesta de asignación de contratista
+      properties:
+        message:
+          type: string
+          description: Mensaje de confirmación
+          example: "Vehiculo asignado correctamente"
+        success:
+          type: boolean
+          description: Indica si la asignación fue exitosa
+          example: true
+
+    AssignmentStaffResponse:
+      type: object
+      description: Respuesta de asignación de contratista
+      properties:
+        message:
+          type: string
+          description: Mensaje de confirmación
+          example: "Personal asignado correctamente"
+        success:
+          type: boolean
+          description: Indica si la asignación fue exitosa
+          example: true
+
+    AssignContractorToVehicleRequest:
+      type: object
+      description: Solicitud para asignar un contratista a un vehículo
+      properties:
+        contractorRut:
+          type: string
+          description: RUT del contratista
+          example: "77655802-8"
+        patent:
+          type: string
+          description: Patente del vehículo
+          example: "KTGT79"
+
+    AssignContractorToStaffRequest:
+      type: object
+      description: Solicitud para asignar un contratista a un personal
+      properties:
+        contractorRut:
+          type: string
+          description: RUT del contratista
+          example: "77655802-8"
+        staffRut:
+          type: string
+          description: RUT del personal
+          example: "24424242-2"
+
+    UnassignmentVehicleResponse:
+      type: object
+      description: Respuesta de desasignación de contratista
+      properties:
+        message:
+          type: string
+          description: Mensaje de confirmación
+          example: "Vehiculo desasignado correctamente"
+        success:
+          type: boolean
+          description: Indica si la asignación fue exitosa
+          example: true
+
+    UnassignmentStaffResponse:
+      type: object
+      description: Respuesta de desasignación de contratista
+      properties:
+        message:
+          type: string
+          description: Mensaje de confirmación
+          example: "Personal desasignado correctamente"
+        success:
+          type: boolean
+          description: Indica si la asignación fue exitosa
+          example: true
+
+    ContractorNotFoundResponse:
+      type: object
+      description: Respuesta de error
+      properties:
+        message:
+          type: string
+          description: Mensaje de error
+          example: "Contratista no encontrado"
+        error:
+          type: string
+          description: Código de error
+          example: "c001"
+        statusCode:
+          type: number
+          description: Código de estado HTTP
+          example: 404
+
+    Vehículo ya pertenece al grupo del contratista que se desea asignar:
+      type: object
+      description: Respuesta de error para solicitudes incorrectas
+      properties:
+        message:
+          type: string
+          description: Mensaje de error
+          example: "El vehículo ya pertenece al grupo del contratista que se desea asignar"
+        error:
+          type: string
+          description: Código de error
+          example: "Bad Request"
+        statusCode:
+          type: number
+          description: Código de estado HTTP
+          example: 400
+
+    Personal ya pertenece al grupo del contratista que se desea asignar:
+      type: object
+      description: Respuesta de error para solicitudes incorrectas
+      properties:
+        message:
+          type: string
+          description: Mensaje de error
+          example: "El personal ya pertenece al grupo del contratista que se desea asignar"
+        error:
+          type: string
+          description: Código de error
+          example: "Bad Request"
+        statusCode:
+          type: number
+          description: Código de estado HTTP
+          example: 400
+
+    RUT del cotratista invalido:
+      type: object
+      description: Respuesta de error para formato de RUT de contratista inválido
+      properties:
+        message:
+          type: array
+          items:
+            type: string
+          description: Lista de mensajes de error
+          example: ["Formato del RUT contratista inválido"]
+        error:
+          type: string
+          description: Código de error
+          example: "Bad Request"
+        statusCode:
+          type: number
+          description: Código de estado HTTP
+          example: 400
+
+    Vehículo no pertenece al grupo del contratista que se desea desasignar:
+      type: object
+      description: Respuesta de error para solicitudes incorrectas
+      properties:
+        message:
+          type: string
+          description: Mensaje de error
+          example: "El vehículo no pertenece al grupo del contratista que se desea desasignar"
+        error:
+          type: string
+          description: Código de error
+          example: "Bad Request"
+        statusCode:
+          type: number
+          description: Código de estado HTTP
+          example: 400
+
+    APIKEY:
+      required: true
+      type: apikey
+      name: Apikey
+      in: header
+      description: Clave APIKEY es requerida en los headers para autenticar las solicitudes.
