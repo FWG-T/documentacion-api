@@ -1,0 +1,1404 @@
+openapi: 3.0.3
+info:
+  title: Testia Onboarding API - Flujo Guiado
+  version: 1.1.0
+  license:
+    name: Proprietary
+    url: https://www.testia.cl
+  description: |
+    API para la creación de contratistas, vehículos y personal y actualización de sus documentos. Asimismo, permite la eliminación, desactivación y activación de contratistas, vehículos y personal.
+  x-last-updated: 2026-05-15
+servers:
+  - url: https://{urlbase}
+    description: URL base pública para consumo cliente
+    variables:
+      urlbase:
+        default: api.testia.com
+        description: Dominio base de la API
+security:
+  - ApiKeyAuth: []
+tags:
+  - name: Acceso y Autenticacion
+    description: Requisitos de acceso tecnico y uso de credenciales.
+  - name: Contratista Empresa
+    description: Registro de contratista empresa.
+  - name: Contratista Persona Natural
+    description: Registro de contratista persona natural.
+  - name: Gestion de Personal
+    description: Registro de personal asociado a contratista.
+  - name: Gestion de Vehiculos
+    description: Registro de vehiculos asociados a contratista.
+  - name: Grupos y Etiquetas Consultas
+    description: Consultas de contratistas asociados a entidades en ms-groups.
+  - name: Grupos y Etiquetas Asignacion
+    description: Asociacion de contratistas a vehiculos o personal en ms-groups.
+  - name: Grupos y Etiquetas Desasignacion
+    description: Desasociacion de contratistas a vehiculos o personal en ms-groups.
+  - name: Configuracion Webhook
+    description: Guia de configuracion y eventos del webhook de notificaciones de Testia.
+paths:
+  /request/contractor:
+    post:
+      tags: [Contratista Empresa]
+      summary: Crear o actualizar contratista
+      description: |
+        ### Crear contratista empresa
+        Registra los datos del contratista y su contraparte, junto con los documentos iniciales.
+
+        ### Crear o actualizar contratista - Archivos
+        Para un contratista ya existente, la actualizacion se realiza mediante nueva carga de documentos,
+        identificando al contratista por `contractor.rut`.
+
+        Reglas de subida de archivos (aplica tanto para creacion como para actualizacion de documentos):
+        - Enviar los binarios en `files`.
+        - Enviar el detalle de cada archivo en `metadata`.
+        - Cada `metadata.fileName` debe coincidir con un archivo adjunto en `files`
+          (mismo nombre y misma cantidad), de lo contrario la solicitud sera rechazada.
+      operationId: createContractor
+      servers:
+        - url: https://{urlbase}
+          description: URL pública para consumo cliente
+          variables:
+            urlbase:
+              default: api.testia.com
+              description: Dominio base de la API
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContractorCompanyMultipartRequest'
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+              examples:
+                empresa:
+                  summary: Ejemplo exitoso empresa
+                  value:
+                    statusCode: 201
+                    message: Contratista empresa creado correctamente
+                persona_natural:
+                  summary: Ejemplo exitoso persona natural
+                  value:
+                    statusCode: 201
+                    message: Contratista persona natural creado correctamente
+        '400':
+          description: "Payload inválido o incompleto (ejemplo: falta rut, businessName, contractorPartner, peso excesivo, etc)."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                sin_rut:
+                  summary: Falta campo rut
+                  value:
+                    statusCode: 400
+                    message: Campo rut es obligatorio
+                    error: ValidationError
+                sin_businessName:
+                  summary: Falta campo businessName
+                  value:
+                    statusCode: 400
+                    message: Campo businessName es obligatorio
+                    error: ValidationError
+                sin_contractorPartner:
+                  summary: Falta campo contractorPartner
+                  value:
+                    statusCode: 400
+                    message: Campo contractorPartner es obligatorio
+                    error: ValidationError
+                peso_excesivo:
+                  summary: Archivo adjunto excede el tamaño permitido
+                  value:
+                    statusCode: 400
+                    message: Tamaño máximo de archivo excedido
+                    error: PayloadTooLarge
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto por entidad ya existente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /request/contractor/files:
+    post:
+      tags: [Contratista Empresa]
+      summary: Crear o actualizar contratista (archivos)
+      description: |
+        Este endpoint documental explica cómo actualizar documentos de un contratista ya existente.
+        
+        **¿Cuándo usarlo?**
+        Cuando necesite subir nuevos archivos/documentos para un contratista que ya está registrado en el sistema.
+        
+        **¿Cómo hacerlo?**
+        1. Envíe el campo `contractor.rut` con el RUT del contratista existente.
+        2. Envíe los archivos nuevos en el campo `files`.
+        3. Envíe el detalle de cada archivo en el campo `metadata`.
+        4. Cada `metadata.fileName` debe coincidir exactamente con un archivo adjunto en `files` (nombre y cantidad).
+        
+        Si la correspondencia entre metadata y archivos no es exacta, la solicitud será rechazada.
+        
+        > Este endpoint es una ayuda documental: la actualización real de archivos se realiza usando el endpoint principal `/request/contractor`.
+      operationId: updateContractorFilesDoc
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContractorCompanyMultipartRequest'
+      responses:
+        '200':
+          description: Documentación de ayuda para actualización de archivos.
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /request/contractor/natural-person:
+    post:
+      tags: [Contratista Persona Natural]
+      summary: Crear contratista persona natural
+      description: |
+        Registra un contratista persona natural.
+        Requiere contractor y contractorPartner; no utiliza companyContractorId.
+      operationId: createNaturalPersonContractor
+      servers:
+        - url: https://{urlbase}
+          description: URL pública para consumo cliente
+          variables:
+            urlbase:
+              default: api.testia.com
+              description: Dominio base de la API
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContractorNaturalPersonMultipartRequest'
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+              examples:
+                persona_natural:
+                  summary: Ejemplo exitoso persona natural
+                  value:
+                    statusCode: 201
+                    message: Contratista persona natural creado correctamente
+        '400':
+          description: "Payload inválido o incompleto (ejemplo: falta rut, peso excesivo, etc)."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                sin_rut:
+                  summary: Falta campo rut
+                  value:
+                    statusCode: 400
+                    message: Campo rut es obligatorio
+                    error: ValidationError
+                peso_excesivo:
+                  summary: Archivo adjunto excede el tamaño permitido
+                  value:
+                    statusCode: 400
+                    message: Tamaño máximo de archivo excedido
+                    error: PayloadTooLarge
+        '401':
+          description: API key ausente o inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /request/staff:
+    post:
+      tags: [Gestion de Personal]
+      summary: Crear personal
+      description: |
+        Registra personal asociado a un contratista mediante companyContractorId.
+      operationId: createStaff
+      servers:
+        - url: https://{urlbase}
+          description: URL pública para consumo cliente
+          variables:
+            urlbase:
+              default: api.testia.com
+              description: Dominio base de la API
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffMultipartRequest'
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: Payload invalido o incompleto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /request/vehicle:
+    post:
+      tags: [Gestion de Vehiculos]
+      summary: Crear vehiculo
+      description: |
+        Registra un vehiculo asociado a un contratista mediante companyContractorId.
+      operationId: createVehicle
+      servers:
+        - url: https://{urlbase}
+          description: URL pública para consumo cliente
+          variables:
+            urlbase:
+              default: api.testia.com
+              description: Dominio base de la API
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VehicleMultipartRequest'
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: Payload invalido o incompleto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/groups/vehicle/unassign:
+    post:
+      tags: [Grupos y Etiquetas Desasignacion]
+      summary: Desasignar contratista de un vehiculo
+      description: |
+        Desasigna un contratista por RUT de un vehiculo por su patente.
+      operationId: unassignContractorToVehicle
+      servers:
+        - url: https://kong-proxy-np.testia.cl/dev/msgroups
+          description: Ambiente DEV msgroups
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleContractorAssociationRequest'
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/groups/vehicle/{vehiclePlate}/contractors:
+    get:
+      tags: [Grupos y Etiquetas Consultas]
+      summary: Obtener contratistas asociados a un vehiculo
+      description: Obtiene listado de contratistas (nombre y RUT) asociados a un vehiculo.
+      operationId: getContractorsByVehicle
+      servers:
+        - url: https://kong-proxy-np.testia.cl/dev/msgroups
+          description: Ambiente DEV msgroups
+      parameters:
+        - name: vehiclePlate
+          in: path
+          required: true
+          description: Patente del vehiculo.
+          schema:
+            type: string
+            example: ABCD12
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContractorAssociationListItem'
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autorizado.
+  /api/v1/groups/staff/{rut}/contractors:
+    get:
+      tags: [Grupos y Etiquetas Consultas]
+      summary: Obtener contratistas asociados a un personal
+      description: Obtiene listado de contratistas (nombre y RUT) asociados a un personal.
+      operationId: getContractorsByStaff
+      servers:
+        - url: https://kong-proxy-np.testia.cl/dev/msgroups
+          description: Ambiente DEV msgroups
+      parameters:
+        - name: rut
+          in: path
+          required: true
+          description: RUT del personal.
+          schema:
+            type: string
+            example: 12345678-9
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContractorAssociationListItem'
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autorizado.
+  /api/v1/groups/vehicle/assign:
+    post:
+      tags: [Grupos y Etiquetas Asignacion]
+      summary: Asignar contratista a un vehiculo
+      description: Asigna un contratista por RUT a un vehiculo por su patente.
+      operationId: assignContractorToVehicle
+      servers:
+        - url: https://kong-proxy-np.testia.cl/dev/msgroups
+          description: Ambiente DEV msgroups
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleContractorAssociationRequest'
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/groups/staff/assign:
+    post:
+      tags: [Grupos y Etiquetas Asignacion]
+      summary: Asignar contratista a un personal
+      description: Asigna un contratista por RUT a un personal por su RUT.
+      operationId: assignContractorToStaff
+      servers:
+        - url: https://kong-proxy-np.testia.cl/dev/msgroups
+          description: Ambiente DEV msgroups
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffContractorAssociationRequest'
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/groups/staff/unassign:
+    post:
+      tags: [Grupos y Etiquetas Desasignacion]
+      summary: Desasignar contratista de un personal
+      description: Desasigna un contratista por RUT de un personal por su RUT.
+      operationId: unassignContractorToStaff
+      servers:
+        - url: https://kong-proxy-np.testia.cl/dev/msgroups
+          description: Ambiente DEV msgroups
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffContractorAssociationRequest'
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /webhooks/configuration:
+    post:
+      tags: [Configuracion Webhook]
+      summary: Configuracion de webhooks y eventos disponibles
+      description: |
+        Referencia oficial:
+        https://www.testia.cl/configuracion-webhook
+
+        Esta guia describe los pasos necesarios y el funcionamiento del webhook utilizado
+        para recibir notificaciones de Testia en tiempo real.
+
+        El webhook es un mecanismo que permite a Api-Testia notificar eventos importantes
+        a tu sistema en tiempo real. A traves de este mecanismo, podras recibir notificaciones
+        sobre estados de documentos e informacion de personal, vehiculos y contratistas,
+        directamente en un endpoint definido por tu aplicacion.
+
+        Para que Testia pueda enviar notificaciones a tu sistema, debes proporcionar una URL
+        de recepcion donde se enviaran los eventos mediante HTTP POST.
+
+        Funcionamiento:
+        - Notificacion a Testia: el administrador que desee recibir notificaciones debe
+          informar a Testia la URL donde desea recibir los eventos.
+        - Metodo de envio: todas las notificaciones se envian por HTTP POST.
+        - Formato del contenido: el payload del webhook se envia en JSON.
+
+        Estructura base del mensaje:
+        - `action`: accion realizada.
+        - `status`: estado de la operacion.
+        - `operationType`: tipo de operacion.
+        - `entity`: entidad sobre la que se realizo la operacion.
+        - `description`: descripcion del evento.
+        - `timestamp`: marca temporal del evento en formato ISO 8601.
+        - `payload`: objeto con la informacion relacionada.
+
+        Tipos de evento, descripcion y ejemplo de salida se muestran como ejemplos
+        individuales en la respuesta para facilitar su seleccion en Swagger/OpenAPI.
+
+        Nota: esta entrada es informativa para onboarding. La configuracion operacional
+        se define segun la guia publica y la coordinacion con el equipo Testia.
+      operationId: webhookConfigurationGuide
+      responses:
+        '201':
+          description: Informacion de referencia para configuracion de webhook.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEventOutput'
+              examples:
+                create_staff:
+                  summary: Create-Staff
+                  value:
+                    action: staff.create
+                    status: success
+                    operationType: create
+                    entity: staff
+                    description: creacion de personal
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: '11111111-1'
+                update_staff:
+                  summary: Update-Staff
+                  value:
+                    action: staff.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion de personal
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: '11111111-1'
+                create_vehicle:
+                  summary: Create-Vehicle
+                  value:
+                    action: vehicle.create
+                    status: success
+                    operationType: create
+                    entity: vehicle
+                    description: creacion de vehiculo
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      vehicle:
+                        patent: ABCD12
+                update_vehicle:
+                  summary: Update-Vehicle
+                  value:
+                    action: vehicle.update
+                    status: success
+                    operationType: update
+                    entity: vehicle
+                    description: actualizacion de vehiculo
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      vehicle:
+                        patent: ABCD12
+                create_contractor:
+                  summary: Create-Contractor
+                  value:
+                    action: contractor.create
+                    status: success
+                    operationType: create
+                    entity: contractor
+                    description: creacion de contratista
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                update_contractor:
+                  summary: Update-Contractor
+                  value:
+                    action: contractor.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion de contratista
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                status_document:
+                  summary: Status-Document
+                  value:
+                    action: document.status
+                    status: success
+                    operationType: update
+                    entity: document
+                    description: actualizacion estado documento
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      document:
+                        documentType: 30
+                        status: Aprobado
+                status_antecedentes:
+                  summary: Status-Antecedentes
+                  value:
+                    action: staff.antecedentes.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion antecedentes
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: '11111111-1'
+                arrears_contractor:
+                  summary: arrears-Contractor
+                  value:
+                    action: contractor.arrears.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion moras
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                trials_staff:
+                  summary: Trials-Staff
+                  value:
+                    action: staff.trials.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion juicios
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: '11111111-1'
+                driver_resume_staff:
+                  summary: driver-Resume-Staff
+                  value:
+                    action: staff.driver_resume.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion hoja de vida conductor
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: '11111111-1'
+                fines_contractor:
+                  summary: Fines-Contractor
+                  value:
+                    action: contractor.fines.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion multas contratista
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                soap_vehicle:
+                  summary: Soap-Vehicle
+                  value:
+                    action: vehicle.soap.update
+                    status: success
+                    operationType: update
+                    entity: vehicle
+                    description: actualizacion SOAP
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      vehicle:
+                        patent: ABCD12
+                fines_vehicle:
+                  summary: Fines-Vehicle
+                  value:
+                    action: vehicle.fines.update
+                    status: success
+                    operationType: update
+                    entity: vehicle
+                    description: actualizacion multas vehiculo
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      vehicle:
+                        patent: ABCD12
+                heist_vehicle:
+                  summary: Heist-Vehicle
+                  value:
+                    action: vehicle.theft.update
+                    status: success
+                    operationType: update
+                    entity: vehicle
+                    description: actualizacion encargo por robo
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      vehicle:
+                        patent: ABCD12
+                        hasTheftRecord: false
+                info_vehicle:
+                  summary: Info-Vehicle
+                  value:
+                    action: vehicle.info.update
+                    status: success
+                    operationType: update
+                    entity: vehicle
+                    description: actualizacion informacion vehiculo
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      vehicle:
+                        patent: ABCD12
+                tax_situation_contractor:
+                  summary: Tax-Situation-contractor
+                  value:
+                    action: contractor.tax_situation.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion situacion tributaria
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                bankruptcy_bulletin_contractor:
+                  summary: Bankruptcy-Bulletin-Contractor
+                  value:
+                    action: contractor.bankruptcy_bulletin.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion boletin concursal
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                difficult_control_contractor:
+                  summary: Difficult-Control-Contractor
+                  value:
+                    action: contractor.difficult_control.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion condicion dificil fiscalizacion
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                info_staff:
+                  summary: Info-Staff
+                  value:
+                    action: staff.info.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion informacion personal
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: '11111111-1'
+                financial_situation_contractor:
+                  summary: Financial-Situation-Contractor
+                  value:
+                    action: contractor.financial_situation.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion financiera contratista
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                corporate_situation_contractor:
+                  summary: Corporate-Situation-Contractor
+                  value:
+                    action: contractor.corporate_situation.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion informacion societaria
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: '77655802-8'
+                technical_review_vehicle:
+                  summary: Technical-Review-Vehicle
+                  value:
+                    action: vehicle.technical_review.update
+                    status: success
+                    operationType: update
+                    entity: vehicle
+                    description: actualizacion revision tecnica
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      vehicle:
+                        patent: ABCD12
+                ia_verification_response:
+                  summary: IA-Verification-Response
+                  value:
+                    action: document.ia_verification
+                    status: error
+                    operationType: validation
+                    entity: document
+                    description: documento no legible
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      document:
+                        documentType: 30
+                        result: rejected
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: apikey
+  schemas:
+    WebhookEventOutput:
+      type: object
+      properties:
+        action:
+          type: string
+          example: staff.create
+        status:
+          type: string
+          example: success
+        operationType:
+          type: string
+          example: create
+        entity:
+          type: string
+          example: staff
+        description:
+          type: string
+          example: creacion de personal
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-05-14T10:00:00.000Z'
+        payload:
+          type: object
+          description: Datos asociados al evento.
+          additionalProperties: true
+      required: [action, status, operationType, entity, description, timestamp, payload]
+    AcceptedResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Solicitud recibida y procesando
+      required: [statusCode, message]
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Bad Request
+        error:
+          type: string
+          example: ValidationError
+      required: [statusCode, message]
+    ContractorAssociationListItem:
+      type: object
+      properties:
+        rut:
+          type: string
+          example: 76192268-8
+        name:
+          type: string
+          example: orbis data spa
+      required: [rut, name]
+    VehicleContractorAssociationRequest:
+      type: object
+      properties:
+        contractorRut:
+          type: string
+          description: RUT del contratista.
+          example: 77655802-8
+        patent:
+          type: string
+          description: Patente del vehiculo.
+          example: KTGT79
+      required: [contractorRut, patent]
+    StaffContractorAssociationRequest:
+      type: object
+      properties:
+        contractorRut:
+          type: string
+          description: RUT del contratista.
+          example: 77655802-8
+        staffRut:
+          type: string
+          description: RUT del personal.
+          example: 24424242-2
+      required: [contractorRut, staffRut]
+    GroupAssociationSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Vehiculo asignado correctamente
+        success:
+          type: boolean
+          example: true
+      required: [message, success]
+    ContractorCompanyMultipartRequest:
+      type: object
+      properties:
+        contractor:
+          type: object
+          description: |
+            Datos del contratista. Para actualizar, enviar unicamente el campo rut (Solo se permite actualizar documentos).
+            Debe usarse contractorTypeId=1 para empresa y contractorTypeId=2 para persona natural.
+          properties:
+            contractorTypeId:
+              type: number
+              description: ID del tipo de contratista. Tipo "1" para Empresa o "2" para Persona natural.
+            rut:
+              type: string
+              description: RUT del contratista para crear o actualizar en formato con guiones sin puntos.
+            businessName:
+              type: string
+              description: Nombre de la contratista. Obligatorio cuando sea tipo "1" (Empresa).
+            name:
+              type: string
+              description: Nombre del contratista. Obligatorio cuando `contractorTypeId` sea "2" (Persona natural).
+            lastName:
+              type: string
+              description: Apellido paterno del contratista. Obligatorio cuando `contractorTypeId` sea "2" (Persona natural).
+            mothersLastName:
+              type: string
+              description: Apellido materno del contratista. Obligatorio cuando `contractorTypeId` sea "2" (Persona natural).
+            serviceTypeId:
+              type: number
+              description: |
+                ID del tipo de servicio del contratista.
+                - Tipo "1" para Monitoreo: Clientes finales.
+                - Tipo "2" para Prospecto: Clientes potenciales (Con tiempo y funciones limitadas).
+            reviewStartDate:
+              type: string
+              format: date-time
+              description: Fecha de inicio de la review en formato ISO 8601.
+            reviewEndDate:
+              type: string
+              format: date-time
+              description: Fecha de fin de la review en formato ISO 8601.
+            reviewCompaniesId:
+              type: array
+              items:
+                type: number
+              description: Lista de empresas de revisión asociadas al contratista.
+          required:
+            - contractorTypeId
+            - rut
+            - serviceTypeId
+            - reviewStartDate
+            - reviewEndDate
+            - reviewCompaniesId
+          example:
+            contractorTypeId: 1
+            rut: "77836508-1"
+            businessName: Testia SpA
+            serviceTypeId: 1
+            reviewStartDate: "2025-01-13T02:59:00.000Z"
+            reviewEndDate: "2027-01-13T02:59:00.000Z"
+            reviewCompaniesId: []
+        contractorPartner:
+          type: object
+          description: Datos de la contraparte asociada al contratista.
+          properties:
+            rut:
+              type: string
+              description: RUT de la contraparte asociado al contratista. Formato con guiones sin puntos.
+            name:
+              type: string
+              description: Nombre de la contraparte asociado al contratista.
+            lastName:
+              type: string
+              description: Apellido de la contraparte asociado al contratista. Se requieren ambos apellidos.
+            email:
+              type: string
+              description: Correo de la contraparte asociado al contratista.
+            phoneNumber:
+              type: string
+              description: Telefono de la contraparte asociado al contratista.
+          required:
+            - rut
+            - name
+            - lastName
+            - email
+            - phoneNumber
+          example:
+            rut: "14260894-4"
+            name: Juan
+            lastName: Pérez Silva
+            email: juan.perez@testia.cl
+            phoneNumber: "+56987654321"
+        metadata:
+          description: Metadatos relacionados con los documentos del contratista.
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+                description: Nombre del documento a subir.
+              documentType:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para empresa:
+                    - "16" F30 (Total pagos)
+                    - "17" F30 - 1 (Pagos individuales)
+                    - "18" Carpeta Tributaria.
+              documentEntity:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para empresa:
+                    - "1" Contratista.
+            required:
+              - fileName
+              - documentType
+              - documentEntity
+          example:
+            - fileName: F30_orbis.pdf
+              documentType: 16
+              documentEntity: 1
+            - fileName: F30-1_orbis.pdf
+              documentType: 17
+              documentEntity: 1
+            - fileName: carpeta_tributaria_orbis.pdf
+              documentType: 18
+              documentEntity: 1
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: Los nombres y cantidad de los archivos debe coincidir con la metadata.
+      required: [contractor, contractorPartner]
+    ContractorNaturalPersonMultipartRequest:
+      type: object
+      properties:
+        contractor:
+          type: object
+          description: |
+            Datos del contratista. Para actualizar, enviar unicamente el campo rut (Solo se permite actualizar documentos).
+            Debe usarse contractorTypeId=1 para empresa y contractorTypeId=2 para persona natural.
+          properties:
+            contractorTypeId:
+              type: number
+              description: ID del tipo de contratista. Tipo "1" para Empresa o "2" para Persona natural.
+            rut:
+              type: string
+              description: RUT del contratista para crear o actualizar en formato con guiones sin puntos.
+            businessName:
+              type: string
+              description: Nombre de la contratista. Obligatorio cuando sea tipo "1" (Empresa).
+            name:
+              type: string
+              description: Nombre del contratista. Obligatorio cuando `contractorTypeId` sea "2" (Persona natural).
+            lastName:
+              type: string
+              description: Apellido paterno del contratista. Obligatorio cuando `contractorTypeId` sea "2" (Persona natural).
+            mothersLastName:
+              type: string
+              description: Apellido materno del contratista. Obligatorio cuando `contractorTypeId` sea "2" (Persona natural).
+            serviceTypeId:
+              type: number
+              description: |
+                ID del tipo de servicio del contratista.
+                - Tipo "1" para Monitoreo: Clientes finales.
+                - Tipo "2" para Prospecto: Clientes potenciales (Con tiempo y funciones limitadas).
+            reviewStartDate:
+              type: string
+              format: date-time
+              description: Fecha de inicio de la review en formato ISO 8601.
+            reviewEndDate:
+              type: string
+              format: date-time
+              description: Fecha de fin de la review en formato ISO 8601.
+            reviewCompaniesId:
+              type: array
+              items:
+                type: number
+              description: Lista de empresas de revisión asociadas al contratista.
+          required:
+            - contractorTypeId
+            - rut
+            - serviceTypeId
+            - reviewStartDate
+            - reviewEndDate
+            - reviewCompaniesId
+          example:
+            contractorTypeId: 2
+            rut: "18394370-7"
+            name: Andrea Soledad
+            lastName: García
+            mothersLastName: Coya
+            serviceTypeId: 1
+            reviewStartDate: "2025-01-13T02:59:00.000Z"
+            reviewEndDate: "2027-01-13T02:59:00.000Z"
+            reviewCompaniesId: []
+        contractorPartner:
+          type: object
+          description: Datos de la contraparte asociada al contratista.
+          properties:
+            rut:
+              type: string
+              description: RUT de la contraparte asociado al contratista. Formato con guiones sin puntos.
+            name:
+              type: string
+              description: Nombre de la contraparte asociado al contratista.
+            lastName:
+              type: string
+              description: Apellido de la contraparte asociado al contratista. Se requieren ambos apellidos.
+            email:
+              type: string
+              description: Correo de la contraparte asociado al contratista.
+            phoneNumber:
+              type: string
+              description: Telefono de la contraparte asociado al contratista.
+          required:
+            - rut
+            - name
+            - lastName
+            - email
+            - phoneNumber
+          example:
+            rut: "18394370-7"
+            name: Andrea Soledad
+            lastName: García Coya
+            email: agarcia@email.cl
+            phoneNumber: "+56978901234"
+        metadata:
+          description: Metadatos relacionados con los documentos del contratista.
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+                description: Nombre del documento a subir.
+              side:
+                type: string
+                description: Side puede ser "frontal" o "trasera". Solo para carnet de identidad y licencia de conducir cuando sea de tipo contratista "2" (Persona natural).
+              documentType:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para persona natural:
+                    - "30" Cedula de Identidad
+                    - "31" Licencia de conducir
+                    - "32" Certificado de Antecedentes
+                    - "33" Hoja de vida del conductor
+              documentEntity:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - Para persona natural:
+                    - "1" Contratista.
+            required:
+              - fileName
+              - documentType
+              - documentEntity
+          example:
+            - fileName: cedula_andrea.pdf
+              documentType: 30
+              documentEntity: 1
+              side: frontal
+            - fileName: licencia_andrea.pdf
+              documentType: 31
+              documentEntity: 1
+              side: frontal
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: Los nombres y cantidad de los archivos debe coincidir con la metadata.
+      required: [contractor, contractorPartner]
+    StaffMultipartRequest:
+      type: object
+      properties:
+        staff:
+          type: object
+          description: Datos del personal. Para actualizar, enviar unicamente el campo rut (Solo se permite actualizar documentos).
+          properties:
+            name:
+              type: string
+              description: Nombre del personal.
+            lastName:
+              type: string
+              description: Apellido paterno del personal.
+            mothersLastName:
+              type: string
+              description: Apellido materno del personal.
+            rut:
+              type: string
+              description: RUT del personal en formato con guiones sin puntos.
+            staffType:
+              type: number
+              description: Identificador del tipo de personal.
+          required:
+            - name
+            - lastName
+            - mothersLastName
+            - rut
+            - staffType
+          example:
+            name: Juan
+            lastName: Pérez
+            mothersLastName: González
+            rut: "11111111-1"
+            staffType: 1
+        companyContractorId:
+          type: string
+          format: uuid
+          description: Identificador del contratista empresa al que se asocia el personal.
+          example: 11111111-2222-3333-4444-555555555555
+        metadata:
+          type: array
+          description: Metadatos relacionados con los documentos del personal.
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+                description: Nombre del documento a subir.
+              documentType:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar para personal.
+                  - "30" Cedula de Identidad
+                  - "31" Licencia de conducir
+                  - "32" Certificado de Antecedentes
+                  - "33" Hoja de vida del conductor
+              documentEntity:
+                type: number
+                description: |
+                  Identificador de entidad para documentos de personal.
+                  - "4" Personal
+              rut:
+                type: string
+                description: RUT del personal al que pertenece el documento.
+              side:
+                type: string
+                description: Side puede ser "frontal" o "trasera" para documentos que tienen ambas caras.
+            required:
+              - fileName
+              - documentType
+              - documentEntity
+              - rut
+          example:
+            - fileName: CIF.png
+              documentType: 30
+              documentEntity: 4
+              rut: "21189592-6"
+              side: frontal
+            - fileName: CA.pdf
+              documentType: 32
+              documentEntity: 4
+              rut: "21189592-6"
+      required: [staff, companyContractorId]
+    VehicleMultipartRequest:
+      type: object
+      properties:
+        vehicle:
+          type: object
+          description: Datos del vehiculo a crear o actualizar.
+          properties:
+            vehicleType:
+              type: number
+              description: Identificador del tipo de vehiculo.
+            patent:
+              type: string
+              description: Patente del vehiculo.
+          required:
+            - vehicleType
+            - patent
+          example:
+            vehicleType: 1
+            patent: BDZW17
+        coupled:
+          type: object
+          description: Datos opcionales de acoplado a crear junto al vehiculo.
+          properties:
+            coupledType:
+              type: number
+              description: Identificador del tipo de acoplado.
+            patent:
+              type: string
+              description: Patente del acoplado.
+          required:
+            - coupledType
+            - patent
+          example:
+            coupledType: 1
+            patent: GSFZ70
+        companyContractorId:
+          type: string
+          format: uuid
+          description: Identificador del contratista empresa al que se asocia el vehiculo.
+          example: 11111111-2222-3333-4444-555555555555
+        metadata:
+          type: array
+          description: Metadatos relacionados con los documentos del vehiculo o acoplado.
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+                description: Nombre del documento a subir.
+              documentType:
+                type: number
+                description: |
+                  Identificador del tipo de documento a cargar.
+                  - "24" Permiso de circulación
+                  - "25" Revisión técnica
+                  - "26" SOAP
+                  - "29" Pagos del seguro
+              documentEntity:
+                type: number
+                description: |
+                  Identificador de entidad del documento.
+                  - "3" Vehículo
+              patent:
+                type: string
+                description: Patente del vehiculo o acoplado asociado al documento.
+              period:
+                type: string
+                description: Periodo MM/YYYY para documentos periódicos (ejemplo, documentType 29).
+            required:
+              - fileName
+              - documentType
+              - documentEntity
+              - patent
+          example:
+            - fileName: PC.jpeg
+              documentType: 24
+              documentEntity: 3
+              patent: HPXJ23
+            - fileName: pagos_marzo_2026.pdf
+              documentType: 29
+              documentEntity: 3
+              patent: HPXJ23
+              period: 03/2026
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: Los nombres y cantidad de los archivos debe coincidir con la metadata.
+      required: [vehicle, companyContractorId]
