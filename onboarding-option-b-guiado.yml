@@ -1,0 +1,66 @@
+version: 1
+id: hu-api-04-onboarding-b
+name: Onboarding Guiado por Escenarios
+mode: guiado
+status: draft
+objective: >-
+  Permitir rutas de integracion segun objetivo del cliente, con salidas
+  verificables por etapa.
+audience:
+  - integrador_con_experiencia
+  - implementacion_incremental
+estimated_duration_minutes:
+  min: 15
+  max: 180
+routes:
+  - id: R1
+    name: Conectividad y autenticacion
+    objective: validar_acceso_tecnico_base
+    estimated_minutes:
+      min: 15
+      max: 30
+    prerequisites:
+      - api_key_dev_activa
+      - url_base_dev
+    required_evidence:
+      - request_autenticado_exitoso
+      - respuesta_http_valida
+    completion_output: conectividad_confirmada
+  - id: R2
+    name: Integracion minima operativa
+    objective: validar_1_flujo_principal_con_webhook
+    estimated_minutes:
+      min: 45
+      max: 90
+    prerequisites:
+      - salida_r1
+      - company_id_habilitado
+      - webhook_endpoint_disponible
+    required_evidence:
+      - request_response_flujo_principal
+      - callback_recibido
+    completion_output: flujo_minimo_operativo
+  - id: R3
+    name: Integracion completa para qa
+    objective: cubrir_3_flujos_negativos_y_cierre
+    estimated_minutes:
+      min: 120
+      max: 180
+    prerequisites:
+      - salida_r2
+    required_evidence:
+      - evidencia_3_flujos
+      - errores_401_400_controlados
+      - checklist_hu_api_04_completo
+    completion_output: listo_para_validacion_qa
+governance:
+  convergence_rule: >-
+    Toda ruta debe converger en checklist final para cierre formal.
+  minimum_exit: r3
+done_criteria:
+  - salida_r1_r2_r3_documentada
+  - convergencia_a_checklist_final
+risks:
+  - cliente_se_quede_en_ruta_parcial
+mitigations:
+  - gate_obligatorio_de_convergencia_a_r3
