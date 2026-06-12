@@ -1,0 +1,4779 @@
+openapi: 3.0.1
+info:
+  title: Testia Onboarding API - Flujo Guiado
+  description: >
+    API para la creación, activación y desactivación de contratistas, vehículos
+    y personal, incluyendo la actualización de sus documentos de manera
+    centralizada.
+  version: 1.2.0
+  license:
+    name: Proprietary
+    url: https://www.testia.cl
+  x-last-updated: '2026-05-15T00:00:00.000Z'
+tags:
+  - name: Gestión de contratista empresa
+  - name: Gestión de contratista persona natural
+  - name: Gestión de personal
+  - name: Gestión de vehículos
+  - name: Gestión de relación
+  - name: Configuración de Webhook
+paths:
+  /request/contractor:
+    post:
+      summary: Crear contratista empresa
+      deprecated: false
+      description: >
+        Permite registrar un contratista empresa, incluyendo sus datos
+        principales, representante y documentos requeridos según contrato.
+
+        La obligatoriedad y el tipo de documentos dependen de la configuración
+        contractual.
+      operationId: createContractor
+      tags:
+        - Gestión de contratista empresa
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                contractor:
+                  type: object
+                  description: |
+                    Datos del contratista para el flujo de creación.
+                    Debe usarse contractorTypeId=1 para contratista empresa.
+                  properties:
+                    contractorTypeId:
+                      type: number
+                      description: >-
+                        ID del tipo de contratista. Para este flujo debe ser "1"
+                        (Empresa).
+                    rut:
+                      type: string
+                      description: RUT del contratista en formato con guiones sin puntos.
+                    businessName:
+                      type: string
+                      description: >-
+                        Nombre de la contratista. Obligatorio cuando sea tipo
+                        "1" (Empresa).
+                    serviceTypeId:
+                      type: number
+                      description: |
+                        ID del tipo de servicio del contratista.
+                        - Tipo "1" para Monitoreo: Revisión periódica.
+                        - Tipo "2" para Prospecto: Revisión única.
+                    reviewStartDate:
+                      type: string
+                      format: date-time
+                      description: Fecha de inicio de la review en formato ISO 8601.
+                    reviewEndDate:
+                      type: string
+                      format: date-time
+                      description: Fecha de fin de la review en formato ISO 8601.
+                    reviewCompaniesId:
+                      type: array
+                      items:
+                        type: integer
+                      description: >-
+                        IDs de empresas de revisión asociadas. Enviar arreglo
+                        vacío si no aplica.
+                  required:
+                    - contractorTypeId
+                    - rut
+                    - serviceTypeId
+                    - reviewStartDate
+                    - reviewEndDate
+                  example:
+                    contractorTypeId: 1
+                    rut: 76000000-0
+                    businessName: EMPRESA DUMMY SPA
+                    serviceTypeId: 1
+                    reviewStartDate: '2025-01-13T02:59:00.000Z'
+                    reviewEndDate: '2027-01-13T02:59:00.000Z'
+                    reviewCompaniesId: []
+                contractorPartner:
+                  type: object
+                  description: Datos de la contraparte asociada al contratista.
+                  properties:
+                    rut:
+                      type: string
+                      description: >-
+                        RUT de la contraparte asociado al contratista. Formato
+                        con guiones sin puntos.
+                    name:
+                      type: string
+                      description: Nombre de la contraparte asociado al contratista.
+                    lastName:
+                      type: string
+                      description: >-
+                        Apellido de la contraparte asociado al contratista. Se
+                        requieren ambos apellidos.
+                    email:
+                      type: string
+                      description: Correo de la contraparte asociado al contratista.
+                    phoneNumber:
+                      type: string
+                      description: Telefono de la contraparte asociado al contratista.
+                  required:
+                    - rut
+                    - name
+                    - lastName
+                    - email
+                    - phoneNumber
+                  example:
+                    rut: 14260894-4
+                    name: Nombre
+                    lastName: Dummy
+                    email: dummy.partner@testia.cl
+                    phoneNumber: '+56987654321'
+                metadata:
+                  description: Metadatos relacionados con los documentos del contratista.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      documentType:
+                        type: number
+                        description: |
+                          Identificador del tipo de documento a cargar.
+                          - Para empresa:
+                            - "16" F30 (Total pagos)
+                            - "17" F30 - 1 (Pagos individuales)
+                            - "18" Carpeta Tributaria.
+                          Regla de obligatoriedad:
+                            - Depende del contrato: puede ser obligatorio o deseable.
+                      documentEntity:
+                        type: number
+                        description: |
+                          Identificador del tipo de documento a cargar.
+                          - Para empresa:
+                            - "1" Contratista.
+                    required:
+                      - fileName
+                      - documentType
+                      - documentEntity
+                  example:
+                    - fileName: F30_dummy.pdf
+                      documentType: 16
+                      documentEntity: 1
+                    - fileName: F30-1_dummy.pdf
+                      documentType: 17
+                      documentEntity: 1
+                    - fileName: carpeta_tributaria_dummy.pdf
+                      documentType: 18
+                      documentEntity: 1
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example:
+                    - F30_dummy.pdf
+              required:
+                - contractor
+                - contractorPartner
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+              examples:
+                empresa:
+                  summary: Ejemplo exitoso empresa
+                  value:
+                    statusCode: 201
+                    message: Contratista empresa creado correctamente
+          headers: {}
+        '400':
+          description: >-
+            Payload inválido o incompleto (ejemplo: falta rut, businessName,
+            contractorPartner, peso excesivo, etc).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                header_companyid_requerido:
+                  summary: Header x-consumer-custom-id ausente
+                  value:
+                    statusCode: 400
+                    message: Header companyId es requerido
+                    error: Bad Request
+                error_interno_guard:
+                  summary: Error interno al validar contrato/empresa
+                  value:
+                    statusCode: 400
+                    message: Error interno, intente nuevamente
+                    error: Bad Request
+                sin_rut:
+                  summary: Falta campo rut
+                  value:
+                    statusCode: 400
+                    message: Campo rut es obligatorio
+                    error: ValidationError
+                sin_businessName:
+                  summary: Falta campo businessName
+                  value:
+                    statusCode: 400
+                    message: Campo businessName es obligatorio
+                    error: ValidationError
+                payload_invalido:
+                  summary: Payload inválido o incompleto
+                  value:
+                    statusCode: 400
+                    message: Payload inválido o incompleto
+                    error: ValidationError
+                sin_contractorPartner:
+                  summary: Falta campo contractorPartner
+                  value:
+                    statusCode: 400
+                    message: Campo contractorPartner es obligatorio
+                    error: ValidationError
+                peso_excesivo:
+                  summary: Archivo adjunto excede el tamaño permitido
+                  value:
+                    statusCode: 400
+                    message: Tamaño máximo de archivo excedido
+                    error: PayloadTooLarge
+                metadata_files_mismatch:
+                  summary: Cantidad de archivos no coincide con metadata
+                  value:
+                    statusCode: 400
+                    timestamp: '2026-05-20T13:02:53.690Z'
+                    path: /request/contractor
+                    message: La cantidad de archivos debe ser igual que metadatos
+                    errorType: Bad Request
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              examples:
+                no_autorizado:
+                  summary: API key ausente o invalida
+                  value:
+                    message: Unauthorized
+                    request_id: fd49b7506711ab474ebb396eb7d07c45
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '409':
+          description: Conflicto por entidad ya existente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                conflicto_entidad:
+                  summary: Entidad ya existente
+                  value:
+                    statusCode: 409
+                    message: Conflicto por entidad ya existente
+                    error: Conflict
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /request/contractor@files:
+    post:
+      summary: Actualizar documentos de contratista empresa
+      deprecated: false
+      description: >
+        Permite actualizar los documentos asociados a una empresa contratista ya
+        registrada. Para realizar la actualización, se debe enviar el RUT del
+        contratista y los nuevos documentos a cargar. La correspondencia entre
+        los metadatos y los documentos adjuntos debe ser exacta.
+      operationId: updateContractorFilesDoc
+      tags:
+        - Gestión de contratista empresa
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                contractor:
+                  type: object
+                  description: >-
+                    Datos mínimos para actualizar documentos de una empresa
+                    contratista ya registrada.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del contratista en formato con guiones sin puntos.
+                  required:
+                    - rut
+                  example:
+                    rut: 76000000-0
+                metadata:
+                  description: Metadatos relacionados con los documentos del contratista.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      documentType:
+                        type: number
+                        description: >
+                          Identificador del tipo de documento a cargar para
+                          empresa.
+
+                          - "16" F30 (Total pagos)
+
+                          - "17" F30 - 1 (Pagos individuales)
+
+                          - "18" Carpeta Tributaria
+                      documentEntity:
+                        type: number
+                        description: |
+                          Identificador de entidad para documento de empresa.
+                          - "1" Contratista.
+                    required:
+                      - fileName
+                      - documentType
+                      - documentEntity
+                  example:
+                    - fileName: F30_dummy.pdf
+                      documentType: 16
+                      documentEntity: 1
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example:
+                    - F30_dummy.pdf
+              required:
+                - contractor
+                - metadata
+                - files
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+              examples:
+                archivos_actualizados:
+                  summary: Archivos actualizados exitosamente
+                  value:
+                    statusCode: 201
+                    message: >-
+                      Documentos del contratista empresa actualizados
+                      correctamente
+          headers: {}
+        '400':
+          description: >-
+            Payload inválido o incompleto (ejemplo: falta rut, metadata-files no
+            coinciden, peso excesivo, etc).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                header_companyid_requerido:
+                  summary: Header x-consumer-custom-id ausente
+                  value:
+                    statusCode: 400
+                    message: Header companyId es requerido
+                    error: Bad Request
+                error_interno_guard:
+                  summary: Error interno al validar contrato/empresa
+                  value:
+                    statusCode: 400
+                    message: Error interno, intente nuevamente
+                    error: Bad Request
+                metadata_files_mismatch:
+                  summary: Metadata y archivos no coinciden
+                  value:
+                    statusCode: 400
+                    message: >-
+                      Los nombres y cantidad de archivos deben coincidir con
+                      metadata
+                    error: ValidationError
+                peso_excesivo:
+                  summary: Archivo excede tamaño permitido
+                  value:
+                    statusCode: 400
+                    message: Tamaño máximo de archivo excedido
+                    error: PayloadTooLarge
+                rut_invalido:
+                  summary: RUT faltante o inválido
+                  value:
+                    statusCode: 400
+                    message: Campo rut es obligatorio o tiene formato inválido
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              examples:
+                no_autorizado:
+                  summary: API key ausente o invalida
+                  value:
+                    message: Unauthorized
+                    request_id: fd49b7506711ab474ebb396eb7d07c45
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                contratista_no_encontrado:
+                  summary: Contratista no encontrado
+                  value:
+                    statusCode: 404
+                    message: Contratista no encontrado
+                    error: NotFound
+          headers: {}
+        '409':
+          description: Conflicto por entidad ya existente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                conflicto_entidad:
+                  summary: Entidad ya existente
+                  value:
+                    statusCode: 409
+                    message: Conflicto por entidad ya existente
+                    error: Conflict
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/contractor/{rutContractor}:
+    get:
+      summary: Consultar contratista empresa
+      deprecated: false
+      description: Obtiene información de un contratista empresa por su RUT.
+      operationId: getContractorInformation
+      tags:
+        - Gestión de contratista empresa
+      parameters:
+        - name: rutContractor
+          in: path
+          description: RUT del contratista.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 99999999-9
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    rut: 99999999-9
+                    name: Contratista Ejemplo
+          headers: {}
+        '400':
+          description: Solicitud incorrecta o contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                contratista_no_encontrado:
+                  summary: Contratista no encontrado
+                  value:
+                    statusCode: 400
+                    timestamp: '2026-05-22T18:56:45.321Z'
+                    path: /consultation/contractor/99999999-9
+                    message: Contratista no encontrado
+                solicitud_incorrecta:
+                  summary: RUT con formato inválido
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/doc/contractor/{rutContractor}:
+    get:
+      summary: Consultar documentos de contratista empresa
+      deprecated: false
+      description: Obtiene documentos asociados a un contratista empresa por su RUT.
+      operationId: getContractorDocuments
+      tags:
+        - Gestión de contratista empresa
+      parameters:
+        - name: rutContractor
+          in: path
+          description: RUT del contratista empresa.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 76000000-0
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    documents:
+                      - documentType: 16
+                        status: aprobado
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/contractor/{rutContractor}/vehicle/{patente}:
+    get:
+      summary: Consultar vehículo asociado a contratista
+      deprecated: false
+      description: Obtiene información de un vehículo asociado a un contratista.
+      operationId: getVehicleInformationByContractor
+      tags:
+        - Gestión de contratista empresa
+      parameters:
+        - name: rutContractor
+          in: path
+          description: RUT del contratista asociado.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 99999999-9
+        - name: patente
+          in: path
+          description: Patente del vehículo.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: XXXX00
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    rutContractor: 99999999-9
+                    patent: XXXX00
+                    vehicleType: 2
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/contractor/{rutContractor}/staff/{rutPersonal}:
+    get:
+      summary: Consultar personal asociado a contratista
+      deprecated: false
+      description: Obtiene información de personal asociado a un contratista.
+      operationId: getStaffInformationByContractor
+      tags:
+        - Gestión de contratista empresa
+      parameters:
+        - name: rutContractor
+          in: path
+          description: RUT del contratista asociado.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 99999999-9
+        - name: rutPersonal
+          in: path
+          description: RUT del personal.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 9999999-9
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    rutContractor: 99999999-9
+                    rutPersonal: 9999999-9
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /request/contractor@natural-person:
+    post:
+      summary: Crear contratista persona natural
+      deprecated: false
+      description: >
+        Permite registrar un contratista persona natural, incluyendo sus datos
+        principales, representante y documentos requeridos según contrato.
+
+        La obligatoriedad y el tipo de documentos dependen de la configuración
+        contractual.
+      operationId: createContractorNaturalPerson
+      tags:
+        - Gestión de contratista persona natural
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                contractor:
+                  type: object
+                  description: >
+                    Datos del contratista. Para actualizar, enviar únicamente el
+                    campo rut (Solo se permite actualizar documentos).
+
+                    Debe usarse contractorTypeId=2 para contratista persona
+                    natural.
+                  properties:
+                    contractorTypeId:
+                      type: number
+                      description: >-
+                        ID del tipo de contratista. Para este flujo debe ser "2"
+                        (Persona natural).
+                    rut:
+                      type: string
+                      description: >-
+                        RUT del contratista para crear o actualizar en formato
+                        con guiones sin puntos.
+                    name:
+                      type: string
+                      description: Nombre del contratista persona natural.
+                    lastName:
+                      type: string
+                      description: Apellido paterno del contratista persona natural.
+                    mothersLastName:
+                      type: string
+                      description: Apellido materno del contratista persona natural.
+                    serviceTypeId:
+                      type: number
+                      description: |
+                        ID del tipo de servicio del contratista.
+                        - Tipo "1" para Monitoreo: Revisión periódica.
+                        - Tipo "2" para Prospecto: Revisión única.
+                    reviewStartDate:
+                      type: string
+                      format: date-time
+                      description: Fecha de inicio de la review en formato ISO 8601.
+                    reviewEndDate:
+                      type: string
+                      format: date-time
+                      description: Fecha de fin de la review en formato ISO 8601.
+                    reviewCompaniesId:
+                      type: array
+                      items:
+                        type: integer
+                      description: >-
+                        IDs de empresas de revisión asociadas. Enviar arreglo
+                        vacío si no aplica.
+                  required:
+                    - contractorTypeId
+                    - rut
+                    - serviceTypeId
+                    - reviewStartDate
+                    - reviewEndDate
+                  example:
+                    contractorTypeId: 2
+                    rut: 22222222-2
+                    name: Nombre Dummy
+                    lastName: Apellido
+                    mothersLastName: Demo
+                    serviceTypeId: 1
+                    reviewStartDate: '2025-01-13T02:59:00.000Z'
+                    reviewEndDate: '2027-01-13T02:59:00.000Z'
+                    reviewCompaniesId: []
+                contractorPartner:
+                  type: object
+                  description: Datos de la contraparte asociada al contratista.
+                  properties:
+                    rut:
+                      type: string
+                      description: >-
+                        RUT de la contraparte asociado al contratista. Formato
+                        con guiones sin puntos.
+                    name:
+                      type: string
+                      description: Nombre de la contraparte asociado al contratista.
+                    lastName:
+                      type: string
+                      description: >-
+                        Apellido de la contraparte asociado al contratista. Se
+                        requieren ambos apellidos.
+                    email:
+                      type: string
+                      description: Correo de la contraparte asociado al contratista.
+                    phoneNumber:
+                      type: string
+                      description: Telefono de la contraparte asociado al contratista.
+                  required:
+                    - rut
+                    - name
+                    - lastName
+                    - email
+                    - phoneNumber
+                  example:
+                    rut: 22222222-2
+                    name: Nombre
+                    lastName: Dummy Demo
+                    email: dummy.np@testia.cl
+                    phoneNumber: '+56911111111'
+                metadata:
+                  description: Metadatos relacionados con los documentos del contratista.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      side:
+                        type: string
+                        description: >-
+                          Side puede ser "frontal" o "trasera". Solo para carnet
+                          de identidad y licencia de conducir cuando sea de tipo
+                          contratista "2" (Persona natural).
+                      documentType:
+                        type: number
+                        description: |
+                          Identificador del tipo de documento a cargar.
+                          - Para persona natural:
+                            - "30" Cedula de Identidad
+                            - "31" Licencia de conducir
+                            - "32" Certificado de Antecedentes
+                            - "33" Hoja de vida del conductor
+                          Regla de obligatoriedad:
+                            - Depende del contrato: puede ser obligatorio o deseable.
+                      documentEntity:
+                        type: number
+                        description: |
+                          Identificador del tipo de documento a cargar.
+                          - Para persona natural:
+                            - "1" Contratista.
+                    required:
+                      - fileName
+                      - documentType
+                  example:
+                    - fileName: cedula_dummy_frontal.jpeg
+                      documentType: 30
+                      side: frontal
+                    - fileName: cedula_dummy_trasera.jpeg
+                      documentType: 30
+                      side: trasera
+                    - fileName: licencia_dummy_frontal.jpeg
+                      documentType: 31
+                      side: frontal
+                    - fileName: licencia_dummy_trasera.jpeg
+                      documentType: 31
+                      side: trasera
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example:
+                    - cedula_dummy_frontal.jpeg
+                    - cedula_dummy_trasera.jpeg
+                    - licencia_dummy_frontal.jpeg
+                    - licencia_dummy_trasera.jpeg
+              required:
+                - contractor
+                - contractorPartner
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+              examples:
+                persona_natural:
+                  summary: Ejemplo exitoso persona natural
+                  value:
+                    statusCode: 201
+                    message: Contratista persona natural creado correctamente
+          headers: {}
+        '400':
+          description: >-
+            Payload inválido o incompleto (ejemplo: falta rut, name, lastName,
+            contractorPartner, peso excesivo, etc).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                header_companyid_requerido:
+                  summary: Header x-consumer-custom-id ausente
+                  value:
+                    statusCode: 400
+                    message: Header companyId es requerido
+                    error: Bad Request
+                error_interno_guard:
+                  summary: Error interno al validar contrato/empresa
+                  value:
+                    statusCode: 400
+                    message: Error interno, intente nuevamente
+                    error: Bad Request
+                sin_rut:
+                  summary: Falta campo rut
+                  value:
+                    statusCode: 400
+                    message: Campo rut es obligatorio
+                    error: ValidationError
+                sin_name:
+                  summary: Falta campo name
+                  value:
+                    statusCode: 400
+                    message: Campo name es obligatorio
+                    error: ValidationError
+                payload_invalido:
+                  summary: Payload inválido o incompleto
+                  value:
+                    statusCode: 400
+                    message: Payload inválido o incompleto
+                    error: ValidationError
+                sin_contractorPartner:
+                  summary: Falta campo contractorPartner
+                  value:
+                    statusCode: 400
+                    message: Campo contractorPartner es obligatorio
+                    error: ValidationError
+                peso_excesivo:
+                  summary: Archivo adjunto excede el tamaño permitido
+                  value:
+                    statusCode: 400
+                    message: Tamaño máximo de archivo excedido
+                    error: PayloadTooLarge
+                metadata_files_mismatch:
+                  summary: Cantidad de archivos no coincide con metadata
+                  value:
+                    statusCode: 400
+                    timestamp: '2026-05-20T13:02:53.690Z'
+                    path: /request/contractor@natural-person
+                    message: La cantidad de archivos debe ser igual que metadatos
+                    errorType: Bad Request
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              examples:
+                no_autorizado:
+                  summary: API key ausente o invalida
+                  value:
+                    message: Unauthorized
+                    request_id: fd49b7506711ab474ebb396eb7d07c45
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '409':
+          description: Conflicto por entidad ya existente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                conflicto_entidad:
+                  summary: Entidad ya existente
+                  value:
+                    statusCode: 409
+                    message: Conflicto por entidad ya existente
+                    error: Conflict
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /request/contractor@natural-person@files:
+    post:
+      summary: Actualizar documentos de contratista persona natural
+      deprecated: false
+      description: >
+        Permite actualizar los documentos asociados a un contratista persona
+        natural ya registrado. Para realizar la actualización, se debe enviar el
+        RUT del contratista y los nuevos documentos a cargar. La correspondencia
+        entre los metadatos y los documentos adjuntos debe ser exacta.
+      operationId: updateContractorNaturalPersonFilesDoc
+      tags:
+        - Gestión de contratista persona natural
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                contractor:
+                  type: object
+                  description: >-
+                    Datos mínimos para actualizar documentos de un contratista
+                    persona natural ya registrado.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del contratista en formato con guiones sin puntos.
+                  required:
+                    - rut
+                  example:
+                    rut: 22222222-2
+                metadata:
+                  description: >-
+                    Metadatos relacionados con los documentos del contratista
+                    persona natural.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      side:
+                        type: string
+                        description: >-
+                          Side puede ser "frontal" o "trasera" para documentos
+                          de identidad/licencia.
+                      documentType:
+                        type: number
+                        description: >
+                          Identificador del tipo de documento a cargar para
+                          persona natural.
+
+                          - "30" Cedula de Identidad
+
+                          - "31" Licencia de conducir
+
+                          - "32" Certificado de Antecedentes
+
+                          - "33" Hoja de vida del conductor
+                      documentEntity:
+                        type: number
+                        description: >
+                          Identificador de entidad para documento de persona
+                          natural.
+
+                          - "1" Contratista.
+                    required:
+                      - fileName
+                      - documentType
+                      - documentEntity
+                  example:
+                    - fileName: cedula_dummy.pdf
+                      documentType: 30
+                      documentEntity: 1
+                      side: frontal
+                    - fileName: licencia_dummy.pdf
+                      documentType: 31
+                      documentEntity: 1
+                      side: frontal
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example:
+                    - cedula_dummy.pdf
+                    - licencia_dummy.pdf
+              required:
+                - contractor
+                - metadata
+                - files
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+              examples:
+                persona_natural_archivos:
+                  summary: Ejemplo exitoso persona natural
+                  value:
+                    statusCode: 201
+                    message: >-
+                      Documentos del contratista persona natural actualizados
+                      correctamente
+          headers: {}
+        '400':
+          description: >-
+            Payload inválido o incompleto (ejemplo: falta rut, metadata-files no
+            coinciden, peso excesivo, etc).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                header_companyid_requerido:
+                  summary: Header x-consumer-custom-id ausente
+                  value:
+                    statusCode: 400
+                    message: Header companyId es requerido
+                    error: Bad Request
+                error_interno_guard:
+                  summary: Error interno al validar contrato/empresa
+                  value:
+                    statusCode: 400
+                    message: Error interno, intente nuevamente
+                    error: Bad Request
+                payload_invalido:
+                  summary: Payload inválido o incompleto
+                  value:
+                    statusCode: 400
+                    message: Payload inválido o incompleto
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              examples:
+                no_autorizado:
+                  summary: API key ausente o invalida
+                  value:
+                    message: Unauthorized
+                    request_id: fd49b7506711ab474ebb396eb7d07c45
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '409':
+          description: Conflicto por entidad ya existente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                conflicto_entidad:
+                  summary: Entidad ya existente
+                  value:
+                    statusCode: 409
+                    message: Conflicto por entidad ya existente
+                    error: Conflict
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/contractor@natural-person/{rutContractor}:
+    get:
+      summary: Consultar contratista persona natural
+      deprecated: false
+      description: Obtiene información de un contratista persona natural por su RUT.
+      operationId: getContractorNaturalPersonInformation
+      tags:
+        - Gestión de contratista persona natural
+      parameters:
+        - name: rutContractor
+          in: path
+          description: RUT del contratista persona natural.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 22222222-2
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    rut: 22222222-2
+                    name: Contratista Persona Natural Ejemplo
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X GET \
+              'https://backend.testia.cl/information/consultation/contractor/{rutContractor}' \
+              -H 'apikey: TU_API_KEY'
+  /consultation/doc/contractor@natural-person/{rutContractor}:
+    get:
+      summary: Consultar documentos de contratista persona natural
+      deprecated: false
+      description: >-
+        Obtiene documentos asociados a un contratista persona natural por su
+        RUT.
+      operationId: getContractorNaturalPersonDocuments
+      tags:
+        - Gestión de contratista persona natural
+      parameters:
+        - name: rutContractor
+          in: path
+          description: RUT del contratista persona natural.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 22222222-2
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    documents:
+                      - documentType: 30
+                        status: aprobado
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X GET \
+              'https://backend.testia.cl/information/consultation/doc/contractor/{rutContractor}' \
+              -H 'apikey: TU_API_KEY'
+  /request/staff:
+    post:
+      summary: Crear personal
+      deprecated: false
+      description: >
+        Registra personal usando el flujo sin contratista asociado.
+
+
+        Documentos de personal para carga (`metadata.documentType`):
+
+        - 30 Cédula de identidad
+
+        - 31 Licencia de conducir
+
+        - 32 Certificado de antecedentes
+
+        - 33 Hoja de vida del conductor
+
+
+        Regla de obligatoriedad:
+
+        - Depende del contrato (puede ser obligatorio o deseable).
+
+        - Tipo 34 (Juicios penales o civiles) está en catálogo, pero no es de
+        carga de archivo (`is_file=false`).
+      operationId: upsertIndependentStaff
+      tags:
+        - Gestión de personal
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                staff:
+                  type: object
+                  description: Datos del personal a crear.
+                  properties:
+                    name:
+                      type: string
+                      description: Nombre del personal.
+                    lastName:
+                      type: string
+                      description: Apellido paterno del personal.
+                    mothersLastName:
+                      type: string
+                      description: Apellido materno del personal.
+                    rut:
+                      type: string
+                      description: RUT del personal en formato con guiones sin puntos.
+                    staffType:
+                      type: number
+                      description: |
+                        Tipo de personal:
+                        - `1` Chofer
+                        - `2` Peoneta
+                        - `3` Gruero
+                        - `4` Encargado bodega
+                        - `5` Administrativo
+                        - `6` Otro
+                  required:
+                    - name
+                    - lastName
+                    - mothersLastName
+                    - rut
+                    - staffType
+                  example:
+                    name: Nombre
+                    lastName: Dummy
+                    mothersLastName: González
+                    rut: 11111111-1
+                    staffType: 1
+                metadata:
+                  type: array
+                  description: Metadatos relacionados con los documentos del personal.
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      documentType:
+                        type: number
+                        description: >
+                          Identificador del tipo de documento a cargar para
+                          personal.
+
+                          - "30" Cedula de Identidad
+
+                          - "31" Licencia de conducir
+
+                          - "32" Certificado de Antecedentes
+
+                          - "33" Hoja de vida del conductor
+
+                          Regla de obligatoriedad:
+
+                          - Depende del contrato: puede ser obligatorio o
+                          deseable.
+
+                          - "34" Juicios penales o civiles existe en catálogo,
+                          pero no es de carga (`is_file=false`).
+                      documentEntity:
+                        type: number
+                        description: |
+                          Identificador de entidad para documentos de personal.
+                          - "4" Personal
+                      rut:
+                        type: string
+                        description: RUT del personal al que pertenece el documento.
+                      side:
+                        type: string
+                        description: >-
+                          Side puede ser "frontal" o "trasera" para documentos
+                          que tienen ambas caras.
+                    required:
+                      - fileName
+                      - documentType
+                  example:
+                    - fileName: CIF.png
+                      documentType: 30
+                      documentEntity: 4
+                      rut: 21189592-6
+                      side: frontal
+                    - fileName: CA.pdf
+                      documentType: 32
+                      documentEntity: 4
+                      rut: 21189592-6
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example: ''
+              required:
+                - staff
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+          headers: {}
+        '400':
+          description: Payload inválido o incompleto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                header_companyid_requerido:
+                  summary: Header x-consumer-custom-id ausente
+                  value:
+                    statusCode: 400
+                    message: Header companyId es requerido
+                    error: Bad Request
+                error_interno_guard:
+                  summary: Error interno al validar contrato/empresa
+                  value:
+                    statusCode: 400
+                    message: Error interno, intente nuevamente
+                    error: Bad Request
+                payload_invalido:
+                  summary: Payload inválido o incompleto
+                  value:
+                    statusCode: 400
+                    message: Payload inválido o incompleto
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              examples:
+                no_autorizado:
+                  summary: API key ausente o invalida
+                  value:
+                    message: Unauthorized
+                    request_id: fd49b7506711ab474ebb396eb7d07c45
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /request/staff@files:
+    post:
+      summary: Actualizar documentos de personal
+      deprecated: false
+      description: |
+        Permite actualizar documentos de personal (sin contratista asociado).
+      operationId: updateStaffFilesIndependent
+      tags:
+        - Gestión de personal
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                staff:
+                  type: object
+                  description: Datos mínimos para actualizar documentos de personal.
+                  properties:
+                    rut:
+                      type: string
+                      description: RUT del personal en formato con guiones sin puntos.
+                  required:
+                    - rut
+                  example:
+                    rut: 11111111-1
+                metadata:
+                  type: array
+                  description: Metadatos relacionados con los documentos del personal.
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      documentType:
+                        type: number
+                        description: >
+                          Identificador del tipo de documento a cargar para
+                          personal.
+
+                          - "30" Cedula de Identidad
+
+                          - "31" Licencia de conducir
+
+                          - "32" Certificado de Antecedentes
+
+                          - "33" Hoja de vida del conductor
+                      documentEntity:
+                        type: number
+                        description: |
+                          Identificador de entidad para documentos de personal.
+                          - "4" Personal
+                      rut:
+                        type: string
+                        description: RUT del personal al que pertenece el documento.
+                      side:
+                        type: string
+                        description: >-
+                          Side puede ser "frontal" o "trasera" para documentos
+                          que tienen ambas caras.
+                    required:
+                      - fileName
+                      - documentType
+                  example:
+                    - fileName: CIF.png
+                      documentType: 30
+                      documentEntity: 4
+                      rut: 11111111-1
+                      side: frontal
+                    - fileName: CA.pdf
+                      documentType: 32
+                      documentEntity: 4
+                      rut: 11111111-1
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example: ''
+              required:
+                - staff
+                - metadata
+                - files
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+          headers: {}
+        '400':
+          description: Payload inválido o incompleto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/staff/{rutPersonal}:
+    get:
+      summary: Consultar personal
+      deprecated: false
+      description: Obtiene información de personal por RUT.
+      operationId: getStaffInformationIndependent
+      tags:
+        - Gestión de personal
+      parameters:
+        - name: rutPersonal
+          in: path
+          description: RUT del personal.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 9999999-9
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    rutPersonal: 9999999-9
+                    name: Personal Ejemplo
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/doc/staff/{rutPersonal}:
+    get:
+      summary: Consultar documentos de personal
+      deprecated: false
+      description: Obtiene documentos de personal por RUT.
+      operationId: getStaffDocumentsIndependent
+      tags:
+        - Gestión de personal
+      parameters:
+        - name: rutPersonal
+          in: path
+          description: RUT del personal.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 9999999-9
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    documents:
+                      - documentType: 30
+                        status: aprobado
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /request/vehicle:
+    post:
+      summary: Crear vehículo
+      deprecated: false
+      description: >
+        Registra un vehículo usando el flujo sin contratista asociado.
+
+
+        Documentos de vehículo/acoplado para carga (`metadata.documentType`):
+
+        - 24 Permiso de circulación
+
+        - 25 Revisión técnica
+
+        - 26 SOAP
+
+        - 28 Póliza del seguro
+
+        - 29 Pagos del seguro
+
+
+        Regla de obligatoriedad:
+
+        - 24, 25 y 26 suelen ser obligatorios según contrato.
+
+        - 28 y 29 pueden ser obligatorios o deseables según contrato.
+
+        - Tipo 27 (Encargo por robo) está en catálogo, pero no es de carga de
+        archivo (`is_file=false`).
+      operationId: upsertIndependentVehicle
+      tags:
+        - Gestión de vehículos
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                vehicle:
+                  type: object
+                  description: Datos del vehículo a crear.
+                  properties:
+                    vehicleType:
+                      type: number
+                      enum:
+                        - 1
+                        - 2
+                        - 3
+                        - 4
+                        - 5
+                        - 6
+                        - 7
+                        - 8
+                        - 9
+                        - 10
+                        - 11
+                        - 12
+                        - 13
+                        - 14
+                        - 15
+                        - 16
+                      description: |
+                        ID del tipo de vehículo.
+                        - "1" Batea
+                        - "2" Cama baja
+                        - "3" Camión abierto
+                        - "4" Camión cerrado
+                        - "5" Camión pluma
+                        - "6" Cisterna
+                        - "7" Furgón
+                        - "8" Rampla abierta
+                        - "9" Rampla cerrada
+                        - "10" Refrigerado
+                        - "11" Semi baranda
+                        - "12" Sider
+                        - "13" Tracto
+                        - "14" Transportador de vehículos
+                        - "15" Utilitario
+                        - "16" Otro
+                    patent:
+                      type: string
+                      description: Patente del vehículo.
+                  required:
+                    - vehicleType
+                    - patent
+                  example:
+                    vehicleType: 1
+                    patent: BDZW17
+                coupled:
+                  type: object
+                  description: Datos opcionales de acoplado a crear junto al vehiculo.
+                  properties:
+                    coupledType:
+                      type: number
+                      description: Identificador del tipo de acoplado.
+                    patent:
+                      type: string
+                      description: Patente del acoplado.
+                  required:
+                    - coupledType
+                    - patent
+                  example:
+                    coupledType: 1
+                    patent: GSFZ70
+                metadata:
+                  type: array
+                  description: >-
+                    Metadatos relacionados con los documentos del vehículo o
+                    acoplado.
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      documentType:
+                        type: number
+                        description: >
+                          Identificador del tipo de documento a cargar.
+
+                          - "24" Permiso de circulación
+
+                          - "25" Revisión técnica
+
+                          - "26" SOAP
+
+                          - "28" Póliza del seguro
+
+                          - "29" Pagos del seguro
+
+                          Regla de obligatoriedad:
+
+                          - 24, 25 y 26 suelen ser obligatorios según contrato.
+
+                          - 28 y 29 pueden ser obligatorios o deseables según
+                          contrato.
+
+                          - "27" Encargo por robo existe en catálogo, pero no es
+                          de carga (`is_file=false`).
+                      documentEntity:
+                        type: number
+                        description: |
+                          Identificador de entidad del documento.
+                          - "3" Vehículo
+                          - "5" Acoplado
+                      patent:
+                        type: string
+                        description: Patente del vehículo o acoplado asociado al documento.
+                      period:
+                        type: string
+                        description: >-
+                          Periodo MM/YYYY para documentos periódicos (ejemplo,
+                          documentType 29).
+                    required:
+                      - fileName
+                      - documentType
+                      - documentEntity
+                      - patent
+                  example:
+                    - fileName: PC.jpeg
+                      documentType: 24
+                      documentEntity: 3
+                      patent: BDZW17
+                    - fileName: pagos_marzo_2026.pdf
+                      documentType: 29
+                      documentEntity: 3
+                      patent: BDZW17
+                      period: 03/2026
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example:
+                    - PC.pdf
+                    - RT.pdf
+                    - S.pdf
+              required:
+                - vehicle
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+          headers: {}
+        '400':
+          description: Payload inválido o incompleto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                header_companyid_requerido:
+                  summary: Header x-consumer-custom-id ausente
+                  value:
+                    statusCode: 400
+                    message: Header companyId es requerido
+                    error: Bad Request
+                error_interno_guard:
+                  summary: Error interno al validar contrato/empresa
+                  value:
+                    statusCode: 400
+                    message: Error interno, intente nuevamente
+                    error: Bad Request
+                payload_invalido:
+                  summary: Payload inválido o incompleto
+                  value:
+                    statusCode: 400
+                    message: Payload inválido o incompleto
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              examples:
+                no_autorizado:
+                  summary: API key ausente o invalida
+                  value:
+                    message: Unauthorized
+                    request_id: fd49b7506711ab474ebb396eb7d07c45
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /request/vehicle@files:
+    post:
+      summary: Actualizar documentos de vehículo
+      deprecated: false
+      description: |
+        Permite actualizar documentos de un vehículo (sin contratista asociado).
+      operationId: updateVehicleFilesIndependent
+      tags:
+        - Gestión de vehículos
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                vehicle:
+                  type: object
+                  description: Datos mínimos para actualizar documentos de vehículo.
+                  properties:
+                    patent:
+                      type: string
+                      description: Patente del vehículo.
+                  required:
+                    - patent
+                  example:
+                    patent: BDZW17
+                metadata:
+                  type: array
+                  description: >-
+                    Metadatos relacionados con los documentos del vehículo o
+                    acoplado.
+                  items:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                        description: Nombre del documento a subir.
+                      documentType:
+                        type: number
+                        description: |
+                          Identificador del tipo de documento a cargar.
+                          - "24" Permiso de circulación
+                          - "25" Revisión técnica
+                          - "26" SOAP
+                          - "28" Póliza del seguro
+                          - "29" Pagos del seguro
+                      documentEntity:
+                        type: number
+                        description: |
+                          Identificador de entidad del documento.
+                          - "3" Vehículo
+                          - "5" Acoplado
+                      patent:
+                        type: string
+                        description: Patente del vehículo o acoplado asociado al documento.
+                      period:
+                        type: string
+                        description: >-
+                          Periodo MM/YYYY para documentos periódicos (ejemplo,
+                          documentType 29).
+                    required:
+                      - fileName
+                      - documentType
+                      - documentEntity
+                      - patent
+                  example:
+                    - fileName: PC.jpeg
+                      documentType: 24
+                      documentEntity: 3
+                      patent: BDZW17
+                    - fileName: pagos_marzo_2026.pdf
+                      documentType: 29
+                      documentEntity: 3
+                      patent: BDZW17
+                      period: 03/2026
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: >-
+                    Los nombres y cantidad de los archivos deben coincidir con
+                    la metadata.
+                  example: ''
+              required:
+                - vehicle
+                - metadata
+                - files
+        required: true
+      responses:
+        '201':
+          description: Solicitud recibida y en procesamiento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+          headers: {}
+        '400':
+          description: Payload inválido o incompleto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+        '401':
+          description: API key ausente o invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/vehicle/{patente}:
+    get:
+      summary: Consultar vehículo
+      deprecated: false
+      description: Obtiene información de un vehículo por patente.
+      operationId: getVehicleInformationIndependent
+      tags:
+        - Gestión de vehículos
+      parameters:
+        - name: patente
+          in: path
+          description: Patente del vehículo.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: XXXX00
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    patent: XXXX00
+                    vehicleType: 2
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /consultation/doc/vehicle/{patente}:
+    get:
+      summary: Consultar documentos de vehículo
+      deprecated: false
+      description: Obtiene documentos de un vehiculo por patente.
+      operationId: getVehicleDocumentsIndependent
+      tags:
+        - Gestión de vehículos
+      parameters:
+        - name: patente
+          in: path
+          description: Patente del vehículo.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: XXXX00
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentConsultationResponse'
+              examples:
+                consulta_exitosa:
+                  summary: Consulta exitosa
+                  value:
+                    documents:
+                      - documentType: 24
+                        status: aprobado
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '403':
+          description: Empresa o contrato sin habilitación para uso de API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empresa_no_encontrada:
+                  summary: Empresa inexistente
+                  value:
+                    statusCode: 403
+                    message: Empresa no encontrada
+                    error: c001
+                empresa_no_habilitada:
+                  summary: Empresa inactiva
+                  value:
+                    statusCode: 403
+                    message: Empresa no habilitada
+                    error: c001
+                contrato_no_encontrado:
+                  summary: Empresa sin contrato asociado
+                  value:
+                    statusCode: 403
+                    message: Contrato no encontrado
+                    error: c001
+                contrato_no_vigente:
+                  summary: Contrato expirado o no iniciado
+                  value:
+                    statusCode: 403
+                    message: Contrato no vigente
+                    error: c001
+                api_use_inactivo:
+                  summary: Contrato vigente sin apiUse habilitado
+                  value:
+                    statusCode: 403
+                    message: Empresa no tiene activa el uso de la API
+                    error: c003
+          headers: {}
+        '500':
+          description: Error interno no controlado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error_interno:
+                  summary: Fallo interno del servicio
+                  value:
+                    statusCode: 500
+                    message: Error interno del servidor
+                    error: Internal Server Error
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /groups/vehicle/{vehiclePlate}/contractors:
+    get:
+      summary: Obtener contratistas asociados a un vehículo
+      deprecated: false
+      description: Obtiene listado de contratistas (nombre y RUT) asociados a un vehiculo.
+      operationId: getContractorsByVehicle
+      tags:
+        - Gestión de relación
+      parameters:
+        - name: vehiclePlate
+          in: path
+          description: Patente del vehículo.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: ABCD12
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContractorAssociationListItem'
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /groups/vehicle/assign:
+    post:
+      summary: Asignar contratista a un vehículo
+      deprecated: false
+      description: Asigna un contratista por RUT a un vehiculo por su patente.
+      operationId: assignContractorToVehicle
+      tags:
+        - Gestión de relación
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleContractorAssociationRequest'
+        required: true
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+              examples:
+                operacion_exitosa:
+                  summary: Operación exitosa
+                  value:
+                    message: Vehiculo asignado correctamente
+                    success: true
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                contratista_no_encontrado:
+                  summary: Contratista no encontrado
+                  value:
+                    statusCode: 404
+                    message: Contratista no encontrado
+                    error: NotFound
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /groups/vehicle/unassign:
+    post:
+      summary: Desasignar contratista de un vehículo
+      deprecated: false
+      description: |
+        Desasigna un contratista por RUT de un vehiculo por su patente.
+      operationId: unassignContractorToVehicle
+      tags:
+        - Gestión de relación
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleContractorAssociationRequest'
+        required: true
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+              examples:
+                operacion_exitosa:
+                  summary: Operación exitosa
+                  value:
+                    message: Vehiculo desasignado correctamente
+                    success: true
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                contratista_no_encontrado:
+                  summary: Contratista no encontrado
+                  value:
+                    statusCode: 404
+                    message: Contratista no encontrado
+                    error: NotFound
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /groups/staff/{rut}/contractors:
+    get:
+      summary: Obtener contratistas asociados a un personal
+      deprecated: false
+      description: Obtiene listado de contratistas (nombre y RUT) asociados a un personal.
+      operationId: getContractorsByStaff
+      tags:
+        - Gestión de relación
+      parameters:
+        - name: rut
+          in: path
+          description: RUT del personal.
+          required: true
+          example: ''
+          schema:
+            type: string
+            example: 12345678-9
+      responses:
+        '200':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContractorAssociationListItem'
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /groups/staff/assign:
+    post:
+      summary: Asignar contratista a un personal
+      deprecated: false
+      description: Asigna un contratista por RUT a un personal por su RUT.
+      operationId: assignContractorToStaff
+      tags:
+        - Gestión de relación
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffContractorAssociationRequest'
+        required: true
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+              examples:
+                operacion_exitosa:
+                  summary: Operación exitosa
+                  value:
+                    message: Personal asignado correctamente
+                    success: true
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                contratista_no_encontrado:
+                  summary: Contratista no encontrado
+                  value:
+                    statusCode: 404
+                    message: Contratista no encontrado
+                    error: NotFound
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /groups/staff/unassign:
+    post:
+      summary: Desasignar contratista de un personal
+      deprecated: false
+      description: Desasigna un contratista por RUT de un personal por su RUT.
+      operationId: unassignContractorToStaff
+      tags:
+        - Gestión de relación
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffContractorAssociationRequest'
+        required: true
+      responses:
+        '201':
+          description: Datos obtenidos exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationSuccessResponse'
+              examples:
+                operacion_exitosa:
+                  summary: Operación exitosa
+                  value:
+                    message: Personal desasignado correctamente
+                    success: true
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                solicitud_incorrecta:
+                  summary: Solicitud incorrecta
+                  value:
+                    statusCode: 400
+                    message: Solicitud incorrecta
+                    error: ValidationError
+          headers: {}
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_autorizado:
+                  summary: No autorizado
+                  value:
+                    statusCode: 401
+                    message: No autorizado
+                    error: Unauthorized
+          headers: {}
+        '404':
+          description: Contratista no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                contratista_no_encontrado:
+                  summary: Contratista no encontrado
+                  value:
+                    statusCode: 404
+                    message: Contratista no encontrado
+                    error: NotFound
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /webhooks/configuration:
+    post:
+      summary: Configuración de webhooks y eventos disponibles
+      deprecated: false
+      description: >-
+        Esta guía describe la configuración y el funcionamiento del webhook
+        utilizado para recibir notificaciones de la API Testia en tiempo real.
+
+
+        Un webhook es un mecanismo que permite a la API Testia notificar eventos
+        a sistemas externos de forma automática. A través de este mecanismo, es
+        posible recibir actualizaciones sobre Contratistas Empresa, Contratistas
+        Persona Natural, Personal, Vehículos y sus respectivos documentos
+        directamente en un endpoint definido por el cliente.
+
+
+        Para recibir estas notificaciones, es necesario configurar una URL de
+        recepción donde la API Testia enviará los eventos mediante solicitudes
+        HTTP POST.
+
+
+        <br>
+
+
+        **Funcionamiento**
+
+
+        <br>
+
+
+        **Configuración del webhook**
+
+
+        La URL de recepción debe registrarse en el Portal API Testia para
+        habilitar el envío de eventos.
+
+
+        <br>
+
+
+        **Método de envío**
+
+
+        Todas las notificaciones se envían mediante HTTP POST.
+
+
+        <br>
+
+
+        **Formato del contenido**
+
+
+        El payload del webhook se envía en formato JSON.
+
+
+        <br>
+
+
+        **Estructura base del mensaje**
+
+
+        * **action:** acción realizada.
+
+        * **status:** estado de la operación.
+
+        * **operationType:** tipo de operación.
+
+        * **entity:** entidad sobre la que se realizó la operación.
+
+        * **timestamp:** fecha y hora del evento en formato ISO 8601.
+
+        * **payload:** objeto con la información asociada al evento.
+
+
+        <br>
+
+
+        Los ejemplos de payload para cada entidad y tipo de evento se encuentran
+        documentados en los siguientes endpoints:
+
+
+        * `/webhooks/contractor`
+
+        * `/webhooks/contractor@natural-person`
+
+        * `/webhooks/staff`
+
+        * `/webhooks/vehicle`
+
+
+        > Nota: esta sección tiene fines informativos para el proceso de
+        onboarding. La configuración operacional y habilitación de eventos se
+        realiza a través del Portal API y según los lineamientos definidos por
+        Testia.
+      operationId: webhookConfigurationGuide
+      tags:
+        - Configuración de Webhook
+      parameters: []
+      responses:
+        '200':
+          description: Estructura base de los eventos webhook
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:
+                    type: string
+                    example: staff.create
+                  status:
+                    type: string
+                    example: success
+                  operationType:
+                    type: string
+                    example: create
+                  entity:
+                    type: string
+                    example: staff
+                  description:
+                    type: string
+                    example: creación de personal
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2026-05-14T10:00:00.000Z'
+                  payload:
+                    type: object
+                    description: Datos asociados al evento.
+                    additionalProperties: true
+                    properties: {}
+                required:
+                  - action
+                  - status
+                  - operationType
+                  - entity
+                  - timestamp
+                  - payload
+              example:
+                action: staff.create
+                status: success
+                operationType: create
+                entity: staff
+                timestamp: '2026-05-14T10:00:00.000Z'
+                payload: {}
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /webhooks/contractor:
+    post:
+      summary: Eventos de Contratista Empresa
+      deprecated: false
+      description: Eventos webhook relacionados con Contratistas Empresa.
+      operationId: webhookContractorCompanyEvents
+      tags:
+        - Configuración de Webhook
+      parameters: []
+      responses:
+        '200':
+          description: Ejemplos de eventos webhook para Contratistas Empresa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:
+                    type: string
+                    example: staff.create
+                  status:
+                    type: string
+                    example: success
+                  operationType:
+                    type: string
+                    example: create
+                  entity:
+                    type: string
+                    example: staff
+                  description:
+                    type: string
+                    example: creación de personal
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2026-05-14T10:00:00.000Z'
+                  payload:
+                    type: object
+                    description: Datos asociados al evento.
+                    additionalProperties: true
+                    properties: {}
+                required:
+                  - action
+                  - status
+                  - operationType
+                  - entity
+                  - timestamp
+                  - payload
+              examples:
+                '10':
+                  summary: Contratista Empresa - Actualización de información judicial
+                  value:
+                    action: contractor-staff.update.civil.criminal.trials
+                    status: success
+                    operationType: additional-info
+                    entity: contractor-staff
+                    description: info-juicios-civiles-penales
+                    timestamp: '2026-06-08T12:05:47.685Z'
+                    payload:
+                      contractor-staff:
+                        caseDetails:
+                          civil:
+                            cases:
+                              - rol: C-1111-2026
+                                admissionDate: 01/01/2026
+                                court: 1º Juzgado Civil de Ejemplo
+                                caseStatus: Tramitación
+                                subject: DDO.
+                          labor:
+                            cases:
+                              - rit: M-111-2026
+                                admissionDate: 01/01/2026
+                                court: Juzgado de Letras del Trabajo de Ejemplo
+                                caseStatus: Tramitación
+                                subject: DDO.
+                                caseType: Monitorio
+                          criminal:
+                            cases:
+                              - rit: Ordinaria-111-2026
+                                courtOrTribunal: Juzgado de Garantía de Ejemplo
+                                ruc: 1111111111-1
+                                labeled: Descripción de causa penal de ejemplo
+                                admissionDate: 01/01/2026
+                                caseStatus: Concluida
+                                subject: Denunciado
+                          collection:
+                            cases:
+                              - rit: P-111-2026
+                                admissionDate: 01/01/2026
+                                court: Juzgado de Cobranza Laboral de Ejemplo
+                                caseStatus: Tramitación
+                                subject: DDO.
+                                amount: ''
+                        rut: 76000000-0
+                        scorePenal: '100'
+                        isInformationUpdated: true
+                '11':
+                  summary: Contratista Empresa - Actualización de difícil fiscalización
+                  value:
+                    action: contractor.updated.difficultFiscalizationContributor
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: info-difficult-fiscalization-contributor
+                    timestamp: '2026-03-13T12:01:57.695Z'
+                    payload:
+                      contractor:
+                        contractor:
+                          rut: 76000000-0
+                          businessName: Empresa Ejemplo SpA
+                          name: null
+                          lastName: null
+                          isGhost: false
+                          deletedAt: null
+                        isDifficultFiscalizationContributor: 'no'
+                        difficultFiscalizationCheckDate: '2026-03-13T00:00:00.000Z'
+                create_contractor:
+                  summary: Contratista Empresa - Creación
+                  value:
+                    action: contractor.create
+                    status: success
+                    operationType: create
+                    entity: contractor
+                    timestamp: '2026-03-13T12:00:54.723Z'
+                    payload:
+                      contractor:
+                        startReview: '2026-03-10'
+                        endReview: '2026-04-30'
+                        contractor:
+                          rut: 76000000-0
+                          businessName: Empresa Ejemplo SpA
+                          name: null
+                          lastName: null
+                          isGhost: null
+                          deletedAt: null
+                          contractorType:
+                            name: Empresa
+                          companyPartner:
+                            - id: 8e9d2430-6df8-4418-9027-4535a0b437aa
+                              rut: 11111111-1
+                              name: Nombre
+                              lastName: Apellido
+                              email: contacto@empresa.cl
+                              phoneNumber: '+56999999999'
+                              userId: null
+                              deletedAt: null
+                              contractor:
+                                id: 122ac0f9-3a99-4d79-8a70-09bdf2a37b8b
+                                rut: 76000000-0
+                                businessName: Empresa Ejemplo SpA
+                                name: null
+                                lastName: null
+                                isGhost: false
+                                createdAt: '2026-01-07T22:07:13.809Z'
+                                updatedAt: '2026-01-07T22:07:13.809Z'
+                                deletedAt: null
+                        serviceType:
+                          name_service_type: Monitoreo
+                        reviewCompanies: []
+                        fullNameUser: null
+                        additionalFields: null
+                        additionalDocuments: null
+                        deletedAt: null
+                        isActive: true
+                      documents: []
+                arrears_contractor:
+                  summary: Contratista Empresa - Actualización de morosidades
+                  value:
+                    action: contractor.updated.arrears
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: info-arrears
+                    timestamp: '2026-05-20T18:59:21.017Z'
+                    payload:
+                      contractor:
+                        rut: 76000000-0
+                        businessName: Empresa Ejemplo SpA
+                        flagMoreRecords: true
+                        arrears:
+                          - affiliateRut: 11111111-1
+                            affiliateName: AFILIADO DUMMY UNO
+                            productType: Seguro Social
+                            afpAfc: Seguro Social
+                            periodToBeRegulatized: 02/2026
+                            letterDate: '2026-04-30T00:00:00.000Z'
+                            demandDate: Prejudicial
+                            deletedAt: null
+                        deletedAt: null
+                fines_contractor:
+                  summary: Contratista Empresa - Actualización de multas
+                  value:
+                    action: contractor.updated.fines
+                    status: success
+                    operationType: updated
+                    entity: contractor
+                    description: información de multas asociadas al contratista
+                    timestamp: '2026-05-20T18:59:49.189Z'
+                    payload:
+                      contractor:
+                        fines:
+                          - consultationDate: '2026-05-20'
+                            origin: FISCALIZACION
+                            fine: 4058/23/014-1
+                            statusFines: PAGADA
+                            executionDate: '2026-04-09T00:00:00.000Z'
+                            nUmFinal: 60
+                            umType: UTM
+                            statement: >-
+                              No consignar por escrito las modificaciones del
+                              contrato de trabajo.
+                            deletedAt: null
+                        rut: 76000000-0
+                tax_situation_contractor:
+                  summary: Contratista Empresa - Actualización de situación tributaria
+                  value:
+                    action: contractor.updated.taxSituation
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: Situación tributaria guardada exitosamente
+                    timestamp: '2026-05-20T18:58:09.393Z'
+                    payload:
+                      contractor:
+                        taxSituation:
+                          rut: 76000000-0
+                          businessName: Empresa Ejemplo SpA
+                          isConsulted: true
+                          startActivities: true
+                          foreignCurrencyTaxAuth: false
+                          isSmallerCompany: false
+                          stampingYear: '2010-01-01'
+                          dateRequestSii: '2026-05-20'
+                          stampedDocuments:
+                            - documentType: Factura Electronica
+                              stampingYear: '2026'
+                              deletedAt: null
+                          contractor:
+                            rut: 76000000-0
+                            businessName: empresa dummy spa
+                            name: null
+                            lastName: null
+                            isGhost: false
+                            deletedAt: null
+                          client: null
+                          deletedAt: null
+                          contractorEconomicActivities:
+                            - activity: ACTIVIDAD DUMMY
+                              code: '123456'
+                              category: Primera
+                              applicableVat: Si
+                              startDate: '2018-11-01T00:00:00.000Z'
+                financial_situation_contractor:
+                  summary: >-
+                    Contratista Empresa - Actualización de información
+                    financiera
+                  value:
+                    action: contractor.updated.financialInformation
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: se actualiza información financiera
+                    timestamp: '2026-05-20T18:58:08.331Z'
+                    payload:
+                      contractor:
+                        financialInformation:
+                          contractor:
+                            rut: 76000000-0
+                            businessName: Empresa Ejemplo SpA
+                            name: null
+                            lastName: null
+                            isGhost: false
+                            deletedAt: null
+                          debtAmount: '0'
+                          predictorScore: null
+                          numCreditors: 0
+                          numDocuments: 0
+                          deletedAt: null
+                corporate_situation_contractor:
+                  summary: >-
+                    Contratista Empresa - Actualización de información
+                    societaria
+                  value:
+                    action: contractor.updated.info-societaria
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: se actualiza información societaria
+                    timestamp: '2026-05-20T18:58:14.277Z'
+                    payload:
+                      contractor:
+                        societaryInformation:
+                          - businessName: Socio Ejemplo SpA
+                            rut: '76000000'
+                            dv: '0'
+                            rutConsulted: '76000000'
+                            dvConsulted: '0'
+                            participationExtract: 00000000-0M
+                            participationExtractDate: '2020-01-01T00:00:00.000Z'
+                            partnerPercentageParticipation: '40'
+                            participationAmount: '1000000'
+                            typeInformation: PARTNER
+                            moneyType: $
+                            deletedAt: null
+                          - businessName: Participación Ejemplo SpA
+                            rut: '77000000'
+                            dv: '1'
+                            rutConsulted: '76000000'
+                            dvConsulted: '0'
+                            participationExtract: 00000001-2F
+                            participationExtractDate: '2021-01-01T00:00:00.000Z'
+                            partnerPercentageParticipation: '0'
+                            participationAmount: '0'
+                            typeInformation: PARTICIPATION
+                            moneyType: $
+                            deletedAt: null
+                        societaryDetail:
+                          rut: '76000000'
+                          societyName: Empresa Ejemplo SpA
+                          year: 2004
+                          personType: J
+                          capitalAmount: '1000000'
+                          capitalMoneyType: $
+                          constitutionDate: null
+                          deletedAt: null
+                contractor_company_info_document:
+                  summary: Contratista Empresa - Información de documento F30
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    timestamp: '2026-05-20T19:39:11.413Z'
+                    payload:
+                      reason: >-
+                        No se identifico el numero del certificado en el
+                        documento.
+                      side: ''
+                      rut: 76000000-0
+                      parent: ''
+                      document: F30 (Total pagos)
+                      documentType: 16
+                      status: Rechazado
+                      expirationDate: null
+                contractor_company_info_document_f30_1:
+                  summary: Contratista empresa - Información de documento F30-1
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    timestamp: '2026-05-20T19:39:11.413Z'
+                    payload:
+                      reason: >-
+                        El RUT del documento no coincide con el registrado en la
+                        plataforma.
+                      side: ''
+                      rut: 76000000-0
+                      parent: ''
+                      document: F30-1 (Pagos individuales)
+                      documentType: 17
+                      status: Rechazado
+                      expirationDate: null
+                contractor_company_info_document_tax_folder:
+                  summary: Contratista Empresa - Información de carpeta tributaria
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    timestamp: '2026-05-20T19:45:11.413Z'
+                    payload:
+                      reason: ''
+                      side: ''
+                      rut: 76000000-0
+                      parent: ''
+                      document: Carpeta Tributaria
+                      documentType: 18
+                      status: Documento cargado
+                      expirationDate: null
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /webhooks/contractor@natural-person:
+    post:
+      summary: Eventos de contratista persona natural
+      deprecated: false
+      description: Eventos webhook relacionados con contratistas persona natural.
+      operationId: webhookContractorNaturalPersonEvents
+      tags:
+        - Configuración de Webhook
+      parameters: []
+      responses:
+        '200':
+          description: Ejemplos de eventos webhook para contratistas persona natural.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEventOutput'
+              examples:
+                01_natural_person_create:
+                  summary: Contratista persona natural - Creación
+                  value:
+                    action: contractor.create
+                    status: success
+                    operationType: create
+                    entity: contractor
+                    description: creacion de contratista persona natural
+                    timestamp: '2026-05-20T20:00:06.192Z'
+                    payload:
+                      contractor:
+                        startReview: '2026-01-13T02:59:00.000Z'
+                        endReview: '2027-01-13T02:59:00.000Z'
+                        contractor:
+                          rut: 11111111-1
+                          businessName: null
+                          name: nombre
+                          lastName: apellido dummy
+                          isGhost: null
+                          deletedAt: null
+                          contractorType:
+                            name: Persona Natural
+                          companyPartner:
+                            - id: 00000000-0000-0000-0000-000000000000
+                              rut: 11111111-1
+                              name: Nombre
+                              lastName: Dummy
+                              email: dummy.np@testia.cl
+                              phoneNumber: '+56911111111'
+                              userId: null
+                              deletedAt: null
+                              contractor: null
+                        serviceType:
+                          name_service_type: Monitoreo
+                        reviewCompanies: []
+                        fullNameUser: null
+                        additionalFields: null
+                        additionalDocuments: null
+                        deletedAt: null
+                        isActive: true
+                      documents: []
+                02_natural_person_update:
+                  summary: Contratista persona natural - Actualización
+                  value:
+                    action: contractor.update
+                    status: success
+                    operationType: update
+                    entity: contractor
+                    description: actualizacion de contratista persona natural
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      contractor:
+                        rut: 11111111-1
+                03_natural_person_document_alert:
+                  summary: Contratista persona natural - Alerta de documento CI
+                  value:
+                    action: document.alert
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: >-
+                      alerta de validacion documental de contratista persona
+                      natural
+                    timestamp: '2026-05-20T20:02:57.216Z'
+                    payload:
+                      reason: El RUT del documento no coincide con el registrado
+                      side: trasera
+                      rut: 11111111-1
+                      parent: ''
+                      document: Cedula de identidad
+                      documentType: 30
+                      status: Rechazado
+                      expirationDate: null
+                04_natural_person_document_info_ci_frontal:
+                  summary: Contratista persona natural - Información CI frontal
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: informacion adicional cedula de identidad frontal
+                    timestamp: '2026-05-20T20:10:57.216Z'
+                    payload:
+                      reason: Documento legible, pero requiere recorte de bordes.
+                      side: frontal
+                      rut: 11111111-1
+                      parent: ''
+                      document: Cedula de identidad
+                      documentType: 30
+                      status: Rechazado
+                      expirationDate: null
+                05_natural_person_document_info_license_frontal:
+                  summary: Contratista persona natural - Información licencia frontal
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: informacion adicional licencia de conducir frontal
+                    timestamp: '2026-05-20T20:11:57.216Z'
+                    payload:
+                      reason: >-
+                        La licencia requiere mayor nitidez en la zona del
+                        número.
+                      side: frontal
+                      rut: 11111111-1
+                      parent: ''
+                      document: Licencia de conducir
+                      documentType: 31
+                      status: Rechazado
+                      expirationDate: null
+                06_natural_person_document_alert_license_trasera:
+                  summary: Contratista persona natural - Alerta licencia trasera
+                  value:
+                    action: document.alert
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: alerta documental licencia de conducir trasera
+                    timestamp: '2026-05-20T20:12:57.216Z'
+                    payload:
+                      reason: El reverso de la licencia no es legible.
+                      side: trasera
+                      rut: 11111111-1
+                      parent: ''
+                      document: Licencia de conducir
+                      documentType: 31
+                      status: Rechazado
+                      expirationDate: null
+                07_natural_person_document_info_background_check:
+                  summary: >-
+                    Contratista persona natural - Información certificado de
+                    antecedentes
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: informacion adicional certificado de antecedentes
+                    timestamp: '2026-05-20T20:13:57.216Z'
+                    payload:
+                      reason: >-
+                        El certificado de antecedentes fue cargado
+                        correctamente.
+                      side: ''
+                      rut: 11111111-1
+                      parent: ''
+                      document: Certificado de antecedentes
+                      documentType: 32
+                      status: Aprobado
+                      expirationDate: null
+                08_natural_person_document_info_driver_record:
+                  summary: >-
+                    Contratista persona natural - Información hoja de vida del
+                    conductor
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: contractor
+                    description: informacion adicional hoja de vida del conductor
+                    timestamp: '2026-05-20T20:14:57.216Z'
+                    payload:
+                      reason: Hoja de vida del conductor recibida y validada.
+                      side: ''
+                      rut: 11111111-1
+                      parent: ''
+                      document: Hoja de vida del conductor
+                      documentType: 33
+                      status: Aprobado
+                      expirationDate: null
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /webhooks/staff:
+    post:
+      summary: Eventos de personal
+      deprecated: false
+      description: Eventos webhook relacionados con personal asociado a contratistas.
+      operationId: webhookStaffEvents
+      tags:
+        - Configuración de Webhook
+      parameters: []
+      responses:
+        '200':
+          description: Ejemplos de eventos webhook para personal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEventOutput'
+              examples:
+                create_staff:
+                  summary: Personal - Creación
+                  value:
+                    action: staff.create
+                    status: success
+                    operationType: create
+                    entity: staff
+                    description: creacion de personal
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: 11111111-1
+                update_staff:
+                  summary: Personal - Actualización
+                  value:
+                    action: staff.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion de personal
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: 11111111-1
+                status_antecedentes:
+                  summary: Personal - Actualización de antecedentes
+                  value:
+                    action: staff.antecedentes.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion antecedentes
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: 11111111-1
+                trials_staff:
+                  summary: Personal - Actualización de juicios completa
+                  value:
+                    action: contractor-staff.update.civil.criminal.trials
+                    status: success
+                    operationType: additional-info
+                    entity: contractor-staff
+                    description: info-juicios-civiles-penales
+                    timestamp: '2026-05-20T18:58:19.191Z'
+                    payload:
+                      contractor-staff:
+                        caseDetails:
+                          civil:
+                            cases:
+                              - rol: C-1000-2026
+                                admissionDate: 01/01/2026
+                                court: 1o Juzgado Civil de Santiago
+                                caseStatus: Tramitacion
+                                subject: DTE.
+                          labor:
+                            cases:
+                              - rit: O-100-2026
+                                admissionDate: 02/01/2026
+                                court: Juzgado de Letras del Trabajo de Santiago
+                                caseStatus: Tramitacion
+                                subject: DDO.
+                                caseType: Ordinario
+                          criminal:
+                            cases: []
+                          collection:
+                            cases:
+                              - rit: C-100-2026
+                                admissionDate: 03/01/2026
+                                court: Jdo. Cob. Laboral y Previsional de Santiago
+                                caseStatus: Tramitacion
+                                subject: DDO.
+                                amount: ''
+                        rut: 76000000-0
+                        isInformationUpdated: true
+                trials_staff_partial:
+                  summary: Personal - Actualización de juicios parcial
+                  value:
+                    action: contractor-staff.update.civil.criminal.trials
+                    status: success
+                    operationType: additional-info
+                    entity: contractor-staff
+                    description: info-juicios-civiles-penales
+                    timestamp: '2026-05-20T18:58:19.191Z'
+                    payload:
+                      contractor-staff:
+                        caseDetails:
+                          civil:
+                            cases: []
+                          labor:
+                            cases:
+                              - rit: O-100-2026
+                                admissionDate: 02/01/2026
+                                court: Juzgado de Letras del Trabajo de Santiago
+                                caseStatus: Tramitacion
+                                subject: DDO.
+                                caseType: Ordinario
+                          criminal: null
+                          collection:
+                            cases:
+                              - rit: D-100-2026
+                                admissionDate: 03/01/2026
+                                court: Jdo. Cob. Laboral y Previsional de Santiago
+                                caseStatus: Concluido
+                                subject: DDO.
+                                amount: ''
+                        rut: 76000000-0
+                        isInformationUpdated: false
+                driver_resume_staff:
+                  summary: Personal - Actualización hoja de vida del conductor
+                  value:
+                    action: staff.driver_resume.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion hoja de vida conductor
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: 11111111-1
+                info_staff:
+                  summary: Personal - Actualización de información
+                  value:
+                    action: staff.info.update
+                    status: success
+                    operationType: update
+                    entity: staff
+                    description: actualizacion informacion personal
+                    timestamp: '2026-05-14T10:00:00.000Z'
+                    payload:
+                      staff:
+                        rut: 11111111-1
+                staff_info_document:
+                  summary: Personal - Información de documento
+                  value:
+                    action: document.info
+                    status: success
+                    operationType: additional-info
+                    entity: staff
+                    description: informacion adicional de documento de personal
+                    timestamp: '2026-05-20T20:10:12.100Z'
+                    payload:
+                      reason: >-
+                        Se requiere una nueva carga del certificado para validar
+                        vigencia.
+                      side: ''
+                      rut: 21189592-6
+                      parent: ''
+                      document: Certificado de antecedentes
+                      documentType: 32
+                      status: Rechazado
+                      expirationDate: null
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+  /webhooks/vehicle:
+    post:
+      summary: Eventos de vehículo
+      deprecated: false
+      description: Eventos webhook relacionados con vehículos asociados a contratistas.
+      operationId: webhookVehicleEvents
+      tags:
+        - Configuración de Webhook
+      parameters: []
+      responses:
+        '200':
+          description: Ejemplos de eventos webhook para vehículos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEventOutput'
+              examples:
+                create_vehicle_anon:
+                  summary: Vehículo - Creación
+                  value:
+                    action: vehicle.create
+                    status: success
+                    operationType: create
+                    entity: vehicle
+                    description: Creacion de vehiculo exitosa
+                    timestamp: '2026-05-28T15:34:12.706Z'
+                    payload:
+                      vehicle:
+                        patent: ZZZZ11
+                        brand: null
+                        model: null
+                        vehicle_year: null
+                        vehicle_color: null
+                        engine_number: null
+                        chassis_number: null
+                        vin_number: null
+                        fuel: null
+                        pvb: null
+                        vehicle_type: null
+                        owner_name: null
+                        owner_rut: null
+                        owner_acquisition_date: null
+                        owner_repertoire: null
+                        owner_number: null
+                        owner_date: null
+                        domain_limitations: null
+                        deletedAt: null
+                      documents: []
+                theft_update_vehicle_anon_01:
+                  summary: Vehículo - Encargo por robo
+                  value:
+                    action: vehicle.updated.theft
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: informacion-encargo-por-robo
+                    timestamp: '2026-05-28T15:34:09.454Z'
+                    payload:
+                      vehicle:
+                        chargeForTheft: >-
+                          El vehiculo consultado N° XXXX00, NO registra encargo
+                          policial vigente.
+                        patent: YYYY22
+                fines_update_vehicle_anon_01:
+                  summary: Vehículo - Multas de tránsito
+                  value:
+                    action: vehicle.updated.fines
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: informacion-multas-de-transito
+                    timestamp: '2026-05-28T15:35:46.479Z'
+                    payload:
+                      vehicle:
+                        trafficFines: []
+                        patent: YYYY22
+                info_update_vehicle_anon_01:
+                  summary: Vehículo - Información general
+                  value:
+                    action: vehicle.update
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: info_vehicle
+                    timestamp: '2026-05-28T15:35:06.285Z'
+                    payload:
+                      vehicle:
+                        informe:
+                          informacionMecanica:
+                            marca: MARCA_FICTICIA
+                            modelo: MODELO_FICTICIO
+                            anno: 2018
+                            numeroMotor: MOTOR-ANON-001
+                            vin: VIN-ANON-001
+                            vehicleColor: COLOR_FICTICIO
+                          informacionLegal:
+                            patente: YYYY22
+                            digitoVerificador: '0'
+                          propietarioActual:
+                            nombre: PROPIETARIO FICTICIO 1
+                technical_review_update_vehicle_anon_01:
+                  summary: Vehículo - Revisión técnica
+                  value:
+                    action: vehicle.updated.technical-review
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: informacion tecnica
+                    timestamp: '2026-05-28T15:36:46.498Z'
+                    payload:
+                      vehicle:
+                        technicalReview:
+                          patent: YYYY22
+                          reviewDate: '2026-02-03'
+                          plantCode: AB1020
+                          plant: PLANTA REVISION FICTICIA
+                          certifiedNumber: CERT-ANON-001
+                          status: Aprobada
+                          expirationDate: '2027-02-28'
+                          greenStamp: SELLO VERDE
+                          expiringNotificationsCount: 0
+                          expiredNotificationsCount: 0
+                          errorStatus: null
+                          deletedAt: null
+                        patent: YYYY22
+                theft_update_vehicle_anon_02:
+                  summary: Vehículo - Encargo por robo (patente creada)
+                  value:
+                    action: vehicle.updated.theft
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: informacion-encargo-por-robo
+                    timestamp: '2026-05-28T15:37:10.865Z'
+                    payload:
+                      vehicle:
+                        chargeForTheft: >-
+                          El vehiculo consultado N° ZZZZ11, NO registra encargo
+                          policial vigente.
+                        patent: ZZZZ11
+                fines_update_vehicle_anon_02:
+                  summary: Vehículo - Multas de tránsito (patente creada)
+                  value:
+                    action: vehicle.updated.fines
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: informacion-multas-de-transito
+                    timestamp: '2026-05-28T15:38:47.524Z'
+                    payload:
+                      vehicle:
+                        trafficFines: []
+                        patent: ZZZZ11
+                technical_review_update_vehicle_anon_02:
+                  summary: Vehículo - Revisión técnica (patente creada)
+                  value:
+                    action: vehicle.updated.technical-review
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: informacion tecnica
+                    timestamp: '2026-05-28T15:39:47.936Z'
+                    payload:
+                      vehicle:
+                        technicalReview:
+                          patent: ZZZZ11
+                          reviewDate: '2025-07-04'
+                          plantCode: B-1345
+                          plant: PLANTA REVISION FICTICIA 2
+                          certifiedNumber: CERT-ANON-002
+                          status: Aprobada
+                          expirationDate: '2026-06-30'
+                          greenStamp: SELLO VERDE
+                          expiringNotificationsCount: 0
+                          expiredNotificationsCount: 0
+                          errorStatus: null
+                          deletedAt: null
+                        patent: ZZZZ11
+                info_update_vehicle_anon_02:
+                  summary: Vehículo - Información general (patente creada)
+                  value:
+                    action: vehicle.update
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: info_vehicle
+                    timestamp: '2026-05-28T15:40:05.291Z'
+                    payload:
+                      vehicle:
+                        informe:
+                          informacionMecanica:
+                            marca: MARCA_FICTICIA_2
+                            modelo: MODELO_FICTICIO_2
+                            anno: 2017
+                            numeroMotor: MOTOR-ANON-002
+                            vin: VIN-ANON-002
+                            vehicleColor: COLOR_FICTICIO_2
+                          informacionLegal:
+                            patente: ZZZZ11
+                            digitoVerificador: '1'
+                          propietarioActual:
+                            nombre: PROPIETARIO FICTICIO 2
+                vehicle_alert_document:
+                  summary: Vehículo - Alerta de documento
+                  value:
+                    action: document.alert
+                    status: success
+                    operationType: additional-info
+                    entity: vehicle
+                    description: alerta de validacion documental de vehiculo
+                    timestamp: '2026-05-20T20:15:42.250Z'
+                    payload:
+                      reason: El documento esta vencido.
+                      side: null
+                      rut: null
+                      parent: CFSF11
+                      document: Permiso de circulacion
+                      documentType: 24
+                      status: Rechazado
+                      expirationDate: '2026-03-31'
+          headers: {}
+        '400':
+          description: Solicitud incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers: {}
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    WebhookEventOutput:
+      type: object
+      properties:
+        action:
+          type: string
+          example: staff.create
+        status:
+          type: string
+          example: success
+        operationType:
+          type: string
+          example: create
+        entity:
+          type: string
+          example: staff
+        description:
+          type: string
+          example: creación de personal
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-05-14T10:00:00.000Z'
+        payload:
+          type: object
+          description: Datos asociados al evento.
+          additionalProperties: true
+          properties: {}
+      required:
+        - action
+        - status
+        - operationType
+        - entity
+        - description
+        - timestamp
+        - payload
+    AcceptedResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Solicitud recibida y procesando
+      required:
+        - statusCode
+        - message
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        error:
+          type: string
+          example: ValidationError
+        errorType:
+          type: string
+          description: Tipo de error devuelto por el gateway o el servicio.
+          example: Bad Request
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora en que ocurrió el error (ISO 8601).
+        path:
+          type: string
+          description: Ruta del endpoint que generó el error.
+          example: /request/contractor
+      required:
+        - statusCode
+        - message
+      example:
+        statusCode: 400
+        message: La cantidad de archivos debe ser igual que metadatos
+        errorType: Bad Request
+    UnauthorizedResponse:
+      type: object
+      description: Respuesta del gateway cuando la API key es ausente o invalida.
+      properties:
+        message:
+          type: string
+          example: Unauthorized
+        request_id:
+          type: string
+          example: fd49b7506711ab474ebb396eb7d07c45
+      required:
+        - message
+        - request_id
+    ContractorAssociationListItem:
+      type: object
+      properties:
+        rut:
+          type: string
+          example: 76000000-0
+        name:
+          type: string
+          example: empresa dummy spa
+      required:
+        - rut
+        - name
+    VehicleContractorAssociationRequest:
+      type: object
+      properties:
+        contractorRut:
+          type: string
+          description: RUT del contratista.
+          example: 76000000-0
+        patent:
+          type: string
+          description: Patente del vehículo.
+          example: KTGT79
+      required:
+        - contractorRut
+        - patent
+    StaffContractorAssociationRequest:
+      type: object
+      properties:
+        contractorRut:
+          type: string
+          description: RUT del contratista.
+          example: 76000000-0
+        staffRut:
+          type: string
+          description: RUT del personal.
+          example: 24424242-2
+      required:
+        - contractorRut
+        - staffRut
+    GroupAssociationSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Vehiculo asignado correctamente
+        success:
+          type: boolean
+          example: true
+      required:
+        - message
+        - success
+    EntityConsultationResponse:
+      type: object
+      description: Respuesta de consulta de información de entidad.
+      additionalProperties: true
+      properties: {}
+    DocumentConsultationResponse:
+      type: object
+      description: Respuesta de consulta de documentos de entidad.
+      additionalProperties: true
+      properties: {}
+  responses: {}
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: apikey
+servers: []
+security: []
